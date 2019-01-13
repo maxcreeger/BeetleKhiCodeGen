@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<khimodule name="mSyringeByAlexandre">
+	<communication>
+		<commands>
+			<command name="SET_TOTAL_VOLUME">
+				<attributes>
+					<attribute name="VOLUME" type="double"/>
+				</attributes>
+			</command>
+			<command name="SET_STEPS_PER_ML">
+				<attributes>
+					<attribute name="STEPS" type="int"/>
+				</attributes>
+			</command>
+			<command name="inject">
+				<attributes>
+					<attribute name="volume" type="double"/>
+				</attributes>
+				<timeout>10000</timeout>
+			</command>
+			<command name="MOVE_TO_LOWER_STOP"/>
+			<command name="MOVE_TO_UPPER_STOP"/>
+		</commands>
+		<sensors>
+			<sensor name="VOLUME">
+				<attributes>
+					<attribute name="VALUE" type="double"/>
+				</attributes>
+			</sensor>
+			<sensor name="UPPER_STOP">
+				<attributes>
+					<attribute name="VALUE" type="boolean"/>
+				</attributes>
+			</sensor>
+			<sensor name="LOWER_STOP">
+				<attributes>
+					<attribute name="VALUE" type="boolean"/>
+				</attributes>
+			</sensor>
+		</sensors>
+		<events>
+			<event name="LOWER_STOP"/>
+			<event name="UPPER_STOP"/>
+			<event name="DONE"/>
+		</events>
+	</communication>
+</khimodule>
