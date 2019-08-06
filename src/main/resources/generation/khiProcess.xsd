@@ -1,0 +1,124 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="module" type="xs:string"/>
+  <xs:element name="I2Caddress" type="xs:string"/>
+  <xs:element name="Node">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="module"/>
+        <xs:element ref="I2Caddress"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="errors">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="error" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="error">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name" use="optional"/>
+          <xs:attribute type="xs:string" name="node"/>
+          <xs:attribute type="xs:string" name="event"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="executeCommand">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="attributes" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name" use="optional"/>
+      <xs:attribute type="xs:string" name="node"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="triggers">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="eventListeners" minOccurs="0"/>
+        <xs:element ref="errors" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="eventListeners">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="eventListener" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="eventListener">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name" use="optional"/>
+          <xs:attribute type="xs:string" name="node"/>
+          <xs:attribute type="xs:string" name="event"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="attribute">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name" use="optional"/>
+          <xs:attribute type="xs:string" name="type" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="attributes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="attribute" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="operation">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="executeCommand" maxOccurs="unbounded" minOccurs="0"/>
+        <xs:element ref="triggers" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="initial" type="xs:string"/>
+  <xs:element name="operations">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="operation" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Nodes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Node" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="plan">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="initial"/>
+        <xs:element ref="operations"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="khiprocess">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Nodes"/>
+        <xs:element ref="plan"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

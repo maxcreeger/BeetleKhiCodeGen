@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<khimodule name="mReactorByBernard">
+	<code>
+		<setup>
+<![CDATA[
+
+
+]]>
+		</setup>
+		<loop>
+<![CDATA[
+  pollTemperature();
+
+]]>
+		</loop>
+		<methods>
+<![CDATA[
+void pollTemperature(){
+  mReactorByBernard_TEMPERATURE_VALUE = 22; // Do actual stuff here!
+}
+]]>
+		</methods>
+	</code>
+	<communication>
+		<commands>
+			<command name="setTemperature" keyword="SET_TEMP">
+				<attributes>
+					<attribute name="temp" type="double">targetTemperature</attribute>
+				</attributes>
+				<timeout>10000</timeout>
+				<response>
+				    <success>OK</success>
+				    <failure>NOK</failure>
+				</response>
+			</command>
+		</commands>
+		<sensors>
+			<sensor name="TEMPERATURE">
+				<attributes>
+					<attribute name="VALUE" type="int"/>
+				</attributes>
+			</sensor>
+		</sensors>
+	</communication>
+</khimodule>

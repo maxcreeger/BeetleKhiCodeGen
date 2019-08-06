@@ -1,0 +1,171 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="attributes">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="attribute" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="attribute">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name" use="optional"/>
+          <xs:attribute type="xs:string" name="type" use="optional"/>
+          <xs:attribute type="xs:string" name="signed" use="optional"/>
+          <xs:attribute type="xs:string" name="length" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="commands">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="command" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="command">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="attributes" minOccurs="0"/>
+        <xs:element ref="timeout" minOccurs="0"/>
+        <xs:element ref="response" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name"/>
+      <xs:attribute type="xs:string" name="keyword"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="sensors">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sensor" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="sensor">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="attributes" minOccurs="0"/>
+        <xs:element ref="variableReference"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="variableReference">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="events">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="event" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="event">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="methods">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="method" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="method">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="stateVariables">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="stateVariable" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="stateVariable">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name"/>
+          <xs:attribute type="xs:string" name="type" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="libraries">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="library" maxOccurs="unbounded" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="library">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute type="xs:string" name="name" use="optional"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="communication">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="commands"/>
+        <xs:element ref="sensors"/>
+        <xs:element ref="events" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="code">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="setup"/>
+        <xs:element ref="loop"/>
+        <xs:element ref="methods"/>
+        <xs:element ref="libraries"/>
+        <xs:element ref="stateVariables"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="setup" type="xs:string"/>
+  <xs:element name="loop" type="xs:string"/>
+  <xs:element name="success" type="xs:string"/>
+  <xs:element name="failure" type="xs:string"/>
+  <xs:element name="timeout" type="xs:short"/>
+  <xs:element name="response">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="success"/>
+        <xs:element ref="failure"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="khimodule">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="code"/>
+        <xs:element ref="communication"/>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="name"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

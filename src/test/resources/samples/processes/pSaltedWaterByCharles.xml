@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<khiprocess name="essai">
+    <Nodes>
+        <Node name="NaOH_syringe">
+            <module>mSyringeByAlexandre</module>
+            <I2Caddress>1</I2Caddress>
+        </Node>
+        <Node name="HCl_syringe">
+            <module>mSyringeByAlexandre</module>
+            <I2Caddress>2</I2Caddress>
+        </Node>
+        <Node name="TheReactor">
+            <module>mReactorByBernard</module>
+            <I2Caddress>3</I2Caddress>
+        </Node>
+    </Nodes>
+    <plan>
+        <initial>setup_HCl</initial>
+		<operations>
+			<!-- Set State to RUN-->
+			<operation name="setup_HCl">
+				<executeCommand name="MOVE_TO_UPPER_STOP" node="HCl_syringe"/>
+				<triggers>
+					<eventListeners>
+						<eventListener name="wait_for_upper_op" event="UPPER_STOP" node="HCl_syringe">send_HCl</eventListener>
+					</eventListeners>
+					<errors>
+						<error name="unexpected_stop" event="UNEXPECTED_STOP" node="HCl_syringe"/>
+					</errors>
+				</triggers>
+			</operation>
+			<operation name="send_HCl">
+				<executeCommand name="inject" node="HCl_syringe">
+					<attributes>
+						<attribute name="volume">80</attribute>
+						<attribute name="flowRate">30</attribute>
+					</attributes>
+				</executeCommand>
+				<triggers>
+					<eventListeners>
+						<eventListener name="setup_hcl_ok" node="HCl_syringe" event="DONE">send_NaOH</eventListener>
+					</eventListeners>
+					<errors>
+						<error name="setup_error" node="HCl_syringe" event="UNEXPECTED_STOP"/>
+					</errors>
+				</triggers>
+			</operation>
+			<operation name="send_NaOH">
+				<executeCommand name="inject" node ="NaOH_syringe">
+					<attributes>
+						<attribute name="volume">20</attribute>
+						<attribute name="flowRate">30</attribute>
+					</attributes>
+				</executeCommand>
+			</operation>
+			<operation name="react">
+				<executeCommand name="setTemperature" node="TheReactor">
+					<attributes>
+						<attribute name="temp" type="double">120.0</attribute>
+					</attributes>
+				</executeCommand>
+			</operation>
+		</operations>
+    </plan>
+</khiprocess>
