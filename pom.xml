@@ -1,25 +1,63 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.beetlekhi</groupId>
-  <artifactId>BeetleKhiCodeGen</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>BeetleKhiCodeGen</name>
-  <description>Generate C code from a BeetleKhi specification to drive BeetleKhi modules</description>
-  <inceptionYear>2018</inceptionYear>
-  <organization>
-  	<name>Beetle Khi</name>
-  </organization>
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.beetlekhi</groupId>
+    <artifactId>BeetleKhiCodeGen</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>BeetleKhiCodeGen</name>
+    <description>Generate C code from a BeetleKhi specification to drive BeetleKhi modules</description>
+    <inceptionYear>2018</inceptionYear>
+
+    <organization>
+        <name>Beetle Khi</name>
+    </organization>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.5.0</version>
+                <executions>
+                    <execution>
+                        <id>xjc</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- The package of your generated sources -->
+                    <!--packageName>test.beetlekhi</packageName-->
+                    <sources>
+                        <source>src/main/resources/xsd</source>
+                    </sources>
+                    <!--<bindingDirectory>src/main/resources/bindings</bindingDirectory>-->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/junit/junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
 </project>

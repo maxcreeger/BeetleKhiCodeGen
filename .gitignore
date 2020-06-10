@@ -1,6 +1,6 @@
 /target/
 /bin/
-/resources/generated/
+/generated/
 /resources/result/
 /.settings/
 .project
@@ -8,3 +8,6 @@
 test-output/
 node_modules/**
 .orig
+/.idea/
+/.settings/
+/bin/

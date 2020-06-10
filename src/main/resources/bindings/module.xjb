@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0">
+
+    <jaxb:bindings schemaLocation="../xsd/khiModule.xsd">
+        <jaxb:schemaBindings>
+            <jaxb:package name="test.beetlekhi.module" />
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="../xsd/khiProcess.xsd">
+        <jaxb:schemaBindings>
+            <jaxb:package name="test.beetlekhi.process" />
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+    <jaxb:bindings schemaLocation="../xsd/khiCommand.xsd">
+        <jaxb:schemaBindings>
+            <jaxb:package name="test.beetlekhi.command" />
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>

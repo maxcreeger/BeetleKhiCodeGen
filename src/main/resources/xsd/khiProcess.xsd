@@ -1,0 +1,125 @@
+<xs:schema attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:khip="http://www.example.com/beetlekhi/process"
+           xmlns:khic="http://www.example.com/beetlekhi/command"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="2.0"
+           targetNamespace="http://www.example.com/beetlekhi/process">
+
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:schemaBindings >
+                <jaxb:package name="test.beetlekhi.process"/>
+            </jaxb:schemaBindings>
+        </xs:appinfo>
+    </xs:annotation>
+
+    <xs:import namespace="http://www.example.com/beetlekhi/command"/>
+
+    <xs:element name="module" type="xs:string"/>
+    <xs:element name="I2Caddress" type="xs:string"/>
+    <xs:element name="Node">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:module"/>
+                <xs:element ref="khip:I2Caddress"/>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="name" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="errors">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:error" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="error">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="node"/>
+                    <xs:attribute type="xs:string" name="event"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="executeCommand">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khic:attributes" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="name" use="optional"/>
+            <xs:attribute type="xs:string" name="node"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="triggers">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:eventListeners" minOccurs="0"/>
+                <xs:element ref="khip:errors" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="eventListeners">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:eventListener" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="eventListener">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="node"/>
+                    <xs:attribute type="xs:string" name="event"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="operation">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:executeCommand" maxOccurs="unbounded" minOccurs="0"/>
+                <xs:element ref="khip:triggers" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="name" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="initial" type="xs:string"/>
+    <xs:element name="operations">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:operation" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Nodes">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:Node" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="plan">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khip:initial"/>
+                <xs:element ref="khip:operations"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="khiprocess">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="khip:Nodes"/>
+                <xs:element ref="khip:plan"/>
+            </xs:choice>
+            <xs:attribute type="xs:string" name="name"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

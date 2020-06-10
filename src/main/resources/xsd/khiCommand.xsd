@@ -1,0 +1,60 @@
+<xs:schema attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:khic="http://www.example.com/beetlekhi/command"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="2.0"
+           targetNamespace="http://www.example.com/beetlekhi/command">
+
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:schemaBindings >
+                <jaxb:package name="test.beetlekhi.command"/>
+            </jaxb:schemaBindings>
+        </xs:appinfo>
+    </xs:annotation>
+
+    <xs:element name="timeout" type="xs:short"/>
+    <xs:element name="success" type="xs:string"/>
+    <xs:element name="failure" type="xs:string"/>
+
+    <xs:element name="attributes">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khic:attribute" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="attribute">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="type" use="optional"/>
+                    <xs:attribute type="xs:string" name="signed" use="optional"/>
+                    <xs:attribute type="xs:string" name="length" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="command">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khic:attributes" minOccurs="0"/>
+                <xs:element ref="khic:timeout" minOccurs="0"/>
+                <xs:element ref="khic:response" minOccurs="0"/>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="name"/>
+            <xs:attribute type="xs:string" name="keyword"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="response">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khic:success"/>
+                <xs:element ref="khic:failure"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

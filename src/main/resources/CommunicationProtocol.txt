@@ -1,0 +1,77 @@
+1 Arduino  is  "KhiCentral"
+N Arduinos are "KhiModule"s
+
+Proposed protocol:
+===============================================
+KhiCentral establishes communication
+1) KhiCentral sends Communication number
+2) KhiCentral sends # of orders
+3) KhiCentral sends Checksum of entire payload
+4a) KhiCentral sends order #1
+4b) KhiCentral sends order #2
+4c) KhiCentral sends order #3
+5) KhiModule computes checksum
+6) KhiCentral requests ACK
+7a) KhiModule sends ACK -> Communication is over
+7b) KhiModule sends NACK -> KhiCentral restarts communication --> if failed 3 times, KhiModule considered dead
+
+
+===============================================
+1) KhiCentral sends command to a KhiModule
+	KhiCentral:
+		int SLAVE_ADDRESS = 8;
+		Wire.beginTransmission(SLAVE_ADDRESS);					// Transmit to device #8
+		Wire.write("456123");									// 1) send comand identifier
+		Wire.write("3");										// 2) 2 commands to be sent
+		Wire.write("4");										// 3) Checksum
+		Wire.write("SYRINGE PUSH20");							// 4a) 1st command
+		Wire.write("SYRINGE PUSH30");							// 4b) 2nd command
+		Wire.write("SYRINGE PUSH-50");							// 4c) 3rd command
+		int result = Wire.endTransmission();					// stop transmitting
+		Wire.requestFrom(SLAVE_ADDRESS, 1);						// Request ACK
+		boolean c = Wire.read();								// receive a byte as boolean
+		if(result != 0 || !c){
+			//TODO transmission failed, re-send
+		}
+		
+	KhiModule:
+		int command_identifier;
+		char** command_body;
+		volatile boolean command_checksum;
+		void setup() {
+			Wire.begin(8);										// Join i2c bus with address #8
+			Wire.onReceive(receiveEvent);						// Register event
+			Wire.onRequest(requestEvent);						// Register event
+		}
+		void receiveEvent(int howMany) {
+			char** body;
+			if (Wire.available() == 0) {						// Nothing to receive ?
+				// TODO Fail
+			}
+			int identifier = Wire.read();						// Receive int for identifier
+			if (Wire.available() == 0) {						// Nothing to receive ?
+				// TODO Fail
+			}
+			int ordersCount = Wire.read();						// Receive int for ordersCount
+			if (Wire.available() == 0) {						// Nothing to receive ?
+				// TODO Fail
+			}
+			int checksum = Wire.read();							// Receive int for checksum
+			char** body[ordersCount][32];
+			int chk = 0;
+			for(int i=0; i<ordersCount; i++){
+				if (Wire.available() == 0) {					// Nothing to receive ?
+					// TODO Fail
+					break;
+				}
+				body[i] = Wire.read();							// Receive command
+				chk += checksum(body[y], 32);
+			}
+			// Compare chk:
+			command_checksum = chk == checksum;					// Compare checksum, store for upcoming ACK/NACK request
+		}
+		void requestEvent() {
+			Wire.write(command_checksum);						// Send ACK/NACK from volatile variable
+		}
+	
+	

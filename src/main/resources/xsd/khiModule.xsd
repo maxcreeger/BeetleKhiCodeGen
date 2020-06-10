@@ -1,0 +1,175 @@
+<xs:schema attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:khim="http://www.example.com/beetlekhi/module"
+           xmlns:khic="http://www.example.com/beetlekhi/command"
+           xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+           jaxb:version="2.0"
+           targetNamespace="http://www.example.com/beetlekhi/module">
+
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:schemaBindings >
+                <jaxb:package name="test.beetlekhi.module"/>
+            </jaxb:schemaBindings>
+        </xs:appinfo>
+    </xs:annotation>
+
+    <xs:import namespace="http://www.example.com/beetlekhi/command"/>
+
+    <xs:element name="commands">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khic:command" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="sensors">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khim:sensor" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="sensor">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="khic:attributes" minOccurs="0"/>
+                <xs:element ref="khim:variableReference"/>
+            </xs:choice>
+            <xs:attribute type="xs:string" name="name" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="variableReference">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="events">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khim:event" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="event">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="methods">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khim:method" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="method">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="internal" type="xs:string"/>
+    <xs:element name="stateVariables">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khim:stateVariable" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="stateVariable">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name"/>
+                    <xs:attribute type="xs:string" name="type" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="libraries">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khim:library" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="library">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="communication">
+        <xs:complexType>
+            <xs:choice  minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="khim:commands"/>
+                <xs:element ref="khim:sensors"/>
+                <xs:element ref="khim:events" minOccurs="0"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="code">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="khim:libraries"/>
+                <xs:element ref="khim:stateVariables"/>
+                <xs:element ref="khim:setup"/>
+                <xs:element ref="khim:loop"/>
+                <xs:element ref="khim:internal"/>
+                <xs:element ref="khim:methods"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="setup" type="xs:string"/>
+    <xs:element name="loop" type="xs:string"/>
+    <xs:element name="fluidConnections">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khim:fluidConnection" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="fluidConnection">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="direction" use="optional"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="hardware">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="khim:fluidConnections"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="khimodule">
+        <xs:complexType>
+            <xs:choice  minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="khim:code"/>
+                <xs:element ref="khim:communication"/>
+                <xs:element ref="khim:hardware"/>
+            </xs:choice>
+            <xs:attribute type="xs:string" name="name"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
