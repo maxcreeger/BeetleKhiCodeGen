@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProcessLinker {
 
@@ -34,14 +35,17 @@ public class ProcessLinker {
     private Map<String, Node> buildNodeLookup(Khiprocess process) throws InvalidKhiProcessException {
         Map<String, Node> moduleMap = new HashMap<>();
         Optional<Nodes> nodes = ArduinoProgram.getClass(process.getNodesOrPlan(), Nodes.class);
-        System.out.println("[Reading] Process Nodes:");
-        if (nodes.isPresent()) {
+        if (nodes.isPresent() && !nodes.get().getNode().isEmpty()) {
+            System.out.println("[Reading] " + nodes.get().getNode().size() + " Process Nodes:");
             for (Node node : nodes.get().getNode()) {
                 if (moduleMap.put(node.getName(), node) != null) {
                     throw new InvalidKhiProcessException("Duplicate Node with name '" + node.getName() + "' in process '" + process.getName() + "'");
                 }
-                System.out.println("  + '" + node.getName() + "' at bus " + node.getI2Caddress() + " using module '" + node.getModule() + "'");
+                System.out.println("  + '" + node.getName() + "'\t at bus " + node.getI2Caddress() + " using module '" + node.getModule() + "'");
             }
+            System.out.println();
+        } else {
+            System.out.println("[Reading] No nodes in the Process\n");
         }
         return moduleMap;
     }
@@ -49,28 +53,32 @@ public class ProcessLinker {
     private Map<String, Operation> buildOperationLookup(Khiprocess process) throws InvalidKhiProcessException {
         Map<String, Operation> operationMap = new HashMap<>();
         Optional<Plan> plan = ArduinoProgram.getClass(process.getNodesOrPlan(), Plan.class);
-        System.out.println("[Reading] Process Operations:");
-        if (plan.isPresent()) {
+        if (plan.isPresent() && !plan.get().getOperations().getOperation().isEmpty()) {
+            System.out.println("[Reading] " + plan.get().getOperations().getOperation().size() + " Process Operations:");
             for (Operation operation : plan.get().getOperations().getOperation()) {
                 if (operationMap.put(operation.getName(), operation) != null) {
                     throw new InvalidKhiProcessException("Duplicate Operation with name '" + operation.getName() + "' in process '" + process.getName() + "'");
                 }
-                System.out.println("  + Operation '" + operation.getName() + "' found with " + operation.getExecuteCommand()
+                System.out.println("  + Operation '" + operation.getName() + "'\t found with " + operation.getExecuteCommand()
                         .size() + " command(s)");
             }
+            System.out.println();
+        } else {
+            System.out.println("[Reading] No Process Operations defined");
         }
         return operationMap;
     }
 
-    private static Map<String, Khimodule> buildModuleLookup(List<Khimodule> repository) throws JAXBException, InvalidStateException {
+    private static Map<String, Khimodule> buildModuleLookup(List<Khimodule> repository) throws InvalidStateException {
         Map<String, Khimodule> moduleLookup = new HashMap<>();
-        System.out.println("[Reading] Modules form the repository:");
+        System.out.println("[Reading] " + repository.size() + " Modules from the repository:");
         for (Khimodule khimodule : repository) {
             if (moduleLookup.put(khimodule.getName(), khimodule) != null) {
                 throw new InvalidStateException("Duplicate Module found with name '" + khimodule.getName() + "'");
             }
             System.out.println("  + " + khimodule.getName());
         }
+        System.out.println();
         return moduleLookup;
     }
 
@@ -97,9 +105,9 @@ public class ProcessLinker {
                     LinkedNode linkedNode = linkedNodeLookup.get(exec.getNode());
                     if (linkedNode == null) {
                         throw new InvalidKhiProcessException("Process '" + process.getName() + "' attempts to execute a command on a node called '"
-                                + exec.getNode() + "', but no such node was registered in the process");
+                                + exec.getNode() + "', but no such node was registered in the process. Available nodes: " + nodeLookup.keySet().stream().map(Object::toString).collect(Collectors.toList()));
                     }
-                    System.out.println("  |  + Command '" + exec.getName() + "' sent to node '" + exec.getNode() + "'");
+                    System.out.println("  |  + Command '" + exec.getName() + "' can be sent sent to node '" + exec.getNode() + "'");
 
                     // Seek for a corresponding command accepted by the module
                     LinkedCommand linkedCommand = findCommand(linkedOperation, exec, linkedNode);
@@ -125,7 +133,7 @@ public class ProcessLinker {
                                 .getName() + "'");
                     }
                     LinkedAttributes commandAttributes = new LinkedAttributes(linkedCommand, moduleCommand, exec);
-                    // TODO do something with it
+                    // TODO do something with linked commandAttributes, maybe add it to linked command?
                 }
 
                 // Build triggers
@@ -150,7 +158,7 @@ public class ProcessLinker {
                 if (linkedNode == null) {
                     throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName()
                             + "' defines listener '" + eventListener.getName() + " on node '" + eventListener.getNode()
-                            + "' but no such node is defined in the process");
+                            + "' but no such node is defined in the process. Available nodes: " + nodeLookup.keySet());
                 }
                 Khimodule module = linkedNode.getKhiModule();
 
@@ -163,7 +171,7 @@ public class ProcessLinker {
                 if (nextOperation == null) {
                     throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName()
                             + "' defines listener '" + eventListener.getName() + " which triggers the next operation '" + nextOperationName
-                            + "', but no such operation is defined in the process");
+                            + "', but no such operation is defined in the process. Available operations: " + operationLookup.keySet());
                 }
                 LinkedOperation nextLinkedOperation = linkedOperationLookup.get(nextOperationName);
                 LinkedTrigger linkedTrigger = new LinkedTrigger(eventListener, event, nextLinkedOperation);
@@ -196,7 +204,7 @@ public class ProcessLinker {
         LinkedNode linkedNode = linkedNodeLookup.get(error.getNode());
         if (linkedNode == null) {
             throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName() + "' defines error '"
-                    + error.getName() + " on node '" + error.getNode() + "' but no such node is defined in the process");
+                    + error.getName() + " on node '" + error.getNode() + "' but no such node is defined in the process. Available nodes: " + nodeLookup.keySet().stream().map(Object::toString).collect(Collectors.toList()));
         }
         Khimodule module = linkedNode.getKhiModule();
 
@@ -277,7 +285,7 @@ public class ProcessLinker {
         if (linkedCommand == null) {
             throw new InvalidKhiProcessException("Process '" + process.getName() + "' attempts to execute a command called'" + exec.getName() + " on node '"
                     + exec.getNode() + "' implemented by module '" + linkedNode.getKhiModule()
-                    .getName() + "', but this modules defines no such command");
+                    .getName() + "', but this module defines no such command");
         }
         return linkedCommand;
     }
@@ -289,7 +297,7 @@ public class ProcessLinker {
             throw new InvalidKhiProcessException("The process '" + process.getName() + "' has no Plan");
         }
         String initialOperationName = plan.get().getInitial();
-        System.out.println("[LINKING] Operations:");
+        System.out.println("[LINKING] " + plan.get().getOperations().getOperation().size() + " Operations:");
         Map<String, LinkedOperation> linkedOperationLookup = new HashMap<>();
         for (Operation operation : plan.get()
                 .getOperations()
@@ -303,14 +311,16 @@ public class ProcessLinker {
         Operation initialOperation = operationLookup.get(initialOperationName);
         if (initialOperation == null) {
             throw new InvalidKhiProcessException("The initial phase of process '" + process.getName() + "' specifies an initial operation '"
-                    + initialOperationName + "' which does not exist in the plan");
+                    + initialOperationName + "' which does not exist in the plan. Existing operations: " + operationLookup.keySet());
         }
+        System.out.println(" -> Initial Operation name: " +initialOperationName);
+        System.out.println();
         return linkedOperationLookup;
     }
 
     private Map<String, LinkedNode> linkNodesToModules(ProcessOverview root) throws MissingKhiModuleException {
         // Link nodes to their modules
-        System.out.println("[LINKING] Nodes to Modules:");
+        System.out.println("[LINKING] " + nodeLookup.size() + " Nodes to " + moduleLookup.size() + " Modules:");
         Map<Node, Khimodule> node2moduleLookup = new HashMap<>();
         Map<String, LinkedNode> linkedNodeLookup = new HashMap<>();
         for (Entry<String, Node> nodeEntry : nodeLookup.entrySet()) {
@@ -318,13 +328,14 @@ public class ProcessLinker {
             Khimodule module = moduleLookup.get(node.getModule());
             if (module == null) {
                 throw new MissingKhiModuleException("The Node '" + nodeEntry.getKey() + "' requires a module with name '" + node.getModule()
-                        + "', but none was found in the repository");
+                        + "', but no module was found in the repository with that name. Available names: " + moduleLookup.keySet());
             }
             node2moduleLookup.put(node, module);
             LinkedNode linkedNode = new LinkedNode(root, node, module);
             linkedNodeLookup.put(node.getName(), linkedNode);
-            System.out.println("  + Node '" + node.getName() + "' uses module '" + module.getName() + "'");
+            System.out.println("  + Node '" + node.getName() + "\t uses module '" + module.getName() + "'");
         }
+        System.out.println();
         return linkedNodeLookup;
     }
 }

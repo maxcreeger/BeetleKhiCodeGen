@@ -6,6 +6,10 @@ import test.beetlekhi.command.Command;
 import test.beetlekhi.module.*;
 import test.beetlekhi.process.Operation;
 
+import javax.xml.bind.JAXBElement;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +70,13 @@ public class ArduinoProgram {
         // End of file
         program.append("\n");
         return program.toString();
+    }
+
+    public void saveToFile(File file) throws IOException {
+        if (file.getParentFile().mkdirs()) {
+            FileOutputStream fos = new FileOutputStream(file);
+            fos.write(this.toString().getBytes());
+        }
     }
 
     private StringBuilder constructIncludeStatements() {
@@ -249,26 +260,35 @@ public class ArduinoProgram {
 
     private StringBuilder constructSetupMethod() {
         Optional<Code> code = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
-        if(!code.isPresent()) {
-            return new StringBuilder("\n\n//No Setup\n");
-        }
-        for (Object obj : code.get().getLibrariesOrStateVariablesOrSetup()) {
-            obj.toString();
-        }
-        // TODO Optional<Setup> setup = getClass(code.get().getLibrariesOrStateVariablesOrSetup(), Setup.class);
         StringBuilder program = new StringBuilder();
-        program.append("\n\n// Setup");
-        program.append("\nvoid setup() {");
-        program.append("\n  Wire.begin(")
-                .append(linkedNode.node.getI2Caddress())
-                .append("); // Join i2c bus");
-        program.append("\n  Wire.onRequest(requestedI2cMesssage); // Register 'Master requests a message' event");
-        program.append("\n  Wire.onReceive(receiveI2cMesssage);   // Register 'Master sends a message' event");
-        program.append("\n  Serial.begin(9600);                   // start serial for output");
-        // TODO program.append(code.get()
-        // TODO         .getSetup());
-        program.append("\n}");
-        return program;
+        if (code.isPresent()) {
+            for (Object obj : code.get().getLibrariesOrStateVariablesOrSetup()) {
+                if (obj instanceof JAXBElement) {
+                    JAXBElement<?> element = ((JAXBElement<?>) obj);
+                    if (String.class == element.getDeclaredType()) {
+                        JAXBElement<String> stringElement = (JAXBElement<String>) element;
+                        if ("setup".equals(stringElement.getName().getLocalPart())) {
+                            String value = stringElement.getValue();
+                            program.append("\n\n// Setup");
+                            program.append("\nvoid setup() {");
+                            program.append("\n  Wire.begin(")
+                                    .append(linkedNode.node.getI2Caddress())
+                                    .append("); // Join i2c bus");
+                            program.append("\n  Wire.onRequest(requestedI2cMesssage); // Register 'Master requests a message' event");
+                            program.append("\n  Wire.onReceive(receiveI2cMesssage);   // Register 'Master sends a message' event");
+                            program.append("\n  Serial.begin(9600);                   // start serial for output");
+                            program.append(value);
+                            program.append("\n}");
+                        }
+                    }
+                }
+            }
+        }
+        if (program.length() == 0) {
+            return new StringBuilder("\n\n// No 'Setup' code\n");
+        } else {
+            return program;
+        }
     }
 
     private StringBuilder constructLoopMethod() {
@@ -276,7 +296,20 @@ public class ArduinoProgram {
         StringBuilder program = new StringBuilder();
         program.append("\n\nvoid loop() {");
         program.append("\n  delay(100);");
-        // TODO program.append(code.get().getLoop());
+        if (code.isPresent()) {
+            for (Object obj : code.get().getLibrariesOrStateVariablesOrSetup()) {
+                if (obj instanceof JAXBElement) {
+                    JAXBElement<?> element = ((JAXBElement<?>) obj);
+                    if (String.class == element.getDeclaredType()) {
+                        JAXBElement<String> stringElement = (JAXBElement<String>) element;
+                        if ("setup".equals(stringElement.getName().getLocalPart())) {
+                            String value = stringElement.getValue();
+                            program.append(value);
+                        }
+                    }
+                }
+            }
+        }
         program.append("\n}\n");
         return program;
     }
