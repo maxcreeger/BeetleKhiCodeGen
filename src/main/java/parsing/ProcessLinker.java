@@ -267,6 +267,15 @@ public class ProcessLinker {
         return event;
     }
 
+    /**
+     * Finds a {@link Command} in a {@link Khimodule} which answers to an {@link ExecuteCommand} order sent by a {@link Khiprocess}
+     *
+     * @param linkedOperation the {@link LinkedOperation} context
+     * @param exec            The {@link ExecuteCommand} specification that needs to be matched by an implementation in the module
+     * @param linkedNode      a {@link LinkedNode} in which to search for the {@link Command}
+     * @return a {@link LinkedCommand} representing the {@link ExecuteCommand} bound to aa {@link Command}
+     * @throws InvalidKhiProcessException if no matching {@link Command} can be found
+     */
     private LinkedCommand findCommand(LinkedOperation linkedOperation, ExecuteCommand exec, LinkedNode linkedNode) throws InvalidKhiProcessException {
         LinkedCommand linkedCommand = null;
         Optional<Communication> communication = ArduinoProgram.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
@@ -313,7 +322,7 @@ public class ProcessLinker {
             throw new InvalidKhiProcessException("The initial phase of process '" + process.getName() + "' specifies an initial operation '"
                     + initialOperationName + "' which does not exist in the plan. Existing operations: " + operationLookup.keySet());
         }
-        System.out.println(" -> Initial Operation name: " +initialOperationName);
+        System.out.println(" -> Initial Operation name: " + initialOperationName);
         System.out.println();
         return linkedOperationLookup;
     }

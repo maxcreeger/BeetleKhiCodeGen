@@ -18,42 +18,46 @@ import java.util.Map.Entry;
 
 public class TestBeetleKhi {
 
-	@Test
-	public void main() throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidKhiModuleException,
-			exceptions.UnavailableCommandException, exceptions.InvalidStateException, IOException {
-		// Read Modules
-		File syringe = new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\mSyringeByAlexandre.xml");
-		File reactor = new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\mReactorByBernard.xml");
-		List<Khimodule> repository = Parser.readModules(syringe, reactor);
+    public static void main(String[] arg) throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidKhiModuleException,
+            exceptions.UnavailableCommandException, exceptions.InvalidStateException, IOException {
+        new TestBeetleKhi().main();
+    }
 
-		// Read process
-		Khiprocess oxygenatedWater = Parser.readProcess(new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\pSaltedWaterByCharles.xml"));
+    @Test
+    public void main() throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidKhiModuleException,
+            exceptions.UnavailableCommandException, exceptions.InvalidStateException, IOException {
+        // Read Modules
+        File syringe = new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\mSyringeByAlexandre.xml");
+        File reactor = new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\mReactorByBernard.xml");
+        List<Khimodule> repository = Parser.readModules(syringe, reactor);
 
-		// Build process and link to modules from the repo
-		ProcessLinker linker = new ProcessLinker(repository, oxygenatedWater);
-		ProcessOverview process = linker.assemble();
+        // Read process
+        Khiprocess oxygenatedWater = Parser.readProcess(new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\pSaltedWaterByCharles.xml"));
 
-		Map<LinkedNode, ArduinoProgram> programs = process.generateNodePrograms();
-		System.out.println();
-		System.out.println();
-		System.out.println("Generated Programs:");
-		for (Entry<LinkedNode, ArduinoProgram> prog : programs.entrySet()) {
-			String nodeName = prog.getKey().node.getName();
-			ArduinoProgram sourceCode = prog.getValue();
-			File file = new File("./resources/generated/" + nodeName + ".c");
-			sourceCode.saveToFile(file);
-			System.out.println("-----------+ " + nodeName + " program +------------------------");
-			System.out.println(sourceCode);
-		}
-		// Simulate
-		System.out.println("-----------+ Master program +------------------------");
-		process.generateMasterProgram();
-		// TODO add library loading
-		// TODO read sensors tag
-		// TODO link sensor variableReference to code/variables
-		for (LinkedNode node : programs.keySet()) {
-			new ModuleMonitor(node).display();
-		}
-	}
+        // Build process and link to modules from the repo
+        ProcessLinker linker = new ProcessLinker(repository, oxygenatedWater);
+        ProcessOverview process = linker.assemble();
+
+        Map<LinkedNode, ArduinoProgram> programs = process.generateNodePrograms();
+        System.out.println();
+        System.out.println();
+        System.out.println("Generated Programs:");
+        for (Entry<LinkedNode, ArduinoProgram> prog : programs.entrySet()) {
+            String nodeName = prog.getKey().node.getName();
+            ArduinoProgram sourceCode = prog.getValue();
+            File file = new File("./target/generated-test-sources/arduino-programs/" + nodeName + ".c");
+            sourceCode.saveToFile(file);
+            System.out.println(" + " + nodeName + ".c program generated");
+        }
+        // Simulate
+        System.out.println("-----------+ Master program +------------------------");
+        process.generateMasterProgram();
+        // TODO add C library loading
+        // TODO read sensors tag
+        // TODO link sensor variableReference to code/variables
+        for (LinkedNode node : programs.keySet()) {
+            new ModuleMonitor(node).display();
+        }
+    }
 
 }

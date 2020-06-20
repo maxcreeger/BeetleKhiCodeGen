@@ -7,6 +7,9 @@ import test.beetlekhi.process.Node;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a resolved Node that can be driven by a process.
+ */
 public class LinkedNode {
 
     public final Node node;

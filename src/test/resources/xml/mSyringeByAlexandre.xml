@@ -55,38 +55,30 @@ void UpperLimitSwitchISR() {
 		<commands>
 			<khic:command name="inject" keyword="PUMP">
 				<khic:attributes>
-					<khic:attribute name="volume"   type="long" signed="true"  length="9">iTargetVolume</khic:attribute>
-					<khic:attribute name="flowRate" type="int"  signed="false" length="6">iFlowRate</khic:attribute>
+					<khic:attribute name="volume"   type="long" signed="true"  length="9" order="1">iTargetVolume</khic:attribute>
+					<khic:attribute name="flowRate" type="int"  signed="false" length="6" order="2">iFlowRate</khic:attribute>
 				</khic:attributes>
 				<khic:timeout>10000</khic:timeout>
 			</khic:command>
-			<khic:command name="MOVE_TO_LOWER_STOP" keyword="MOVE_TO_LOWER_STOP">
-				<khic:attributes>
-					<khic:attribute name="yesOrNo"   type="boolean" length="5">bMoveToLowerLimit</khic:attribute>
-				</khic:attributes>
-			</khic:command>
-			<khic:command name="MOVE_TO_UPPER_STOP" keyword="MOVE_TO_UPPER_STOP">
-				<khic:attributes>
-					<khic:attribute name="yesOrNo"   type="boolean" length="5">bMoveToUpperLimit</khic:attribute>
-				</khic:attributes>
-			</khic:command>
+			<khic:command name="MOVE_TO_LOWER_STOP" keyword="MOVE_TO_LOWER_STOP"/>
+			<khic:command name="MOVE_TO_UPPER_STOP" keyword="MOVE_TO_UPPER_STOP"/>
 		</commands>
 		<sensors>
 			<sensor name="VOLUME">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="double"/>
+					<khic:attribute name="VALUE" type="double" order="1"/>
 				</khic:attributes>
 				<variableReference name="iCurrentVolume"/>
 			</sensor>
 			<sensor name="UPPER_STOP">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="boolean"/>
+					<khic:attribute name="VALUE" type="boolean" order="1"/>
 				</khic:attributes>
 				<variableReference name="bUpperLimit"/>
 			</sensor>
 			<sensor name="LOWER_STOP">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="boolean"/>
+					<khic:attribute name="VALUE" type="boolean" order="1"/>
 				</khic:attributes>
 				<variableReference name="bLowerLimit"/>
 			</sensor>

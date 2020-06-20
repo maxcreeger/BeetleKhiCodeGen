@@ -3,11 +3,16 @@ package linker;
 import generator.ProcessOverview;
 import test.beetlekhi.command.Attribute;
 import test.beetlekhi.process.ExecuteCommand;
+import test.beetlekhi.process.Khiprocess;
 import test.beetlekhi.process.Operation;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an {@link Operation} specified by a {@link Khiprocess} in which the relating Triggers, Error handling and
+ * Commands are resolved with a matching implementation by a module.
+ */
 public class LinkedOperation {
 
     public final ProcessOverview parentProcess;

@@ -1,5 +1,4 @@
-<xs:schema attributeFormDefault="unqualified"
-           elementFormDefault="qualified"
+<xs:schema elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:khic="http://www.example.com/beetlekhi/command"
            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
@@ -24,15 +23,20 @@
                 <xs:element ref="khic:attribute" maxOccurs="unbounded" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
+        <xs:unique name="UniqueAttributeOrder">
+            <xs:selector xpath="khic:attribute" />
+            <xs:field xpath="@order" />
+        </xs:unique>
     </xs:element>
     <xs:element name="attribute">
         <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="name" use="optional"/>
-                    <xs:attribute type="xs:string" name="type" use="optional"/>
-                    <xs:attribute type="xs:string" name="signed" use="optional"/>
-                    <xs:attribute type="xs:string" name="length" use="optional"/>
+                    <xs:attribute type="xs:string" name="name"/>
+                    <xs:attribute type="xs:string" name="type"/>
+                    <xs:attribute type="xs:string" name="signed"/>
+                    <xs:attribute type="xs:string" name="length"/>
+                    <xs:attribute type="xs:string" name="order"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>

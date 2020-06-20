@@ -1,68 +1,73 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <khip:khiprocess
-		xmlns:khip="http://www.example.com/beetlekhi/process"
-		xmlns:khic="http://www.example.com/beetlekhi/command"
-		name="essai">
-        <khip:Nodes>
-            <khip:Node name="NaOH_syringe">
-                <khip:module>mSyringeByAlexandre</khip:module>
-                <khip:I2Caddress>1</khip:I2Caddress>
-            </khip:Node>
-            <khip:Node name="HCl_syringe">
-                <khip:module>mSyringeByAlexandre</khip:module>
-                <khip:I2Caddress>2</khip:I2Caddress>
-            </khip:Node>
-            <khip:Node name="TheReactor">
-                <khip:module>mReactorByBernard</khip:module>
-                <khip:I2Caddress>3</khip:I2Caddress>
-            </khip:Node>
-        </khip:Nodes>
-        <khip:plan>
-            <khip:initial>setup_HCl</khip:initial>
-            <khip:operations>
+        xmlns:khip="http://www.example.com/beetlekhi/process"
+        xmlns:khic="http://www.example.com/beetlekhi/command"
+        name="essai">
+    <khip:Nodes>
+        <khip:Node name="NaOH_syringe">
+            <khip:module>mSyringeByAlexandre</khip:module>
+            <khip:I2Caddress>1</khip:I2Caddress>
+        </khip:Node>
+        <khip:Node name="HCl_syringe">
+            <khip:module>mSyringeByAlexandre</khip:module>
+            <khip:I2Caddress>2</khip:I2Caddress>
+        </khip:Node>
+        <khip:Node name="TheReactor">
+            <khip:module>mReactorByBernard</khip:module>
+            <khip:I2Caddress>3</khip:I2Caddress>
+        </khip:Node>
+    </khip:Nodes>
+    <khip:plan>
+        <khip:initial>setup_HCl</khip:initial>
+        <khip:operations>
             <!-- Set State to RUN-->
-			<khip:operation name="setup_HCl">
-				<khip:executeCommand name="MOVE_TO_UPPER_STOP" node="HCl_syringe"/>
-				<khip:triggers>
-					<khip:eventListeners>
-						<khip:eventListener name="wait_for_upper_op" event="UPPER_STOP" node="HCl_syringe">send_HCl</khip:eventListener>
-					</khip:eventListeners>
-					<khip:errors>
-						<khip:error name="unexpected_stop" event="UNEXPECTED_STOP" node="HCl_syringe"/>
-					</khip:errors>
-				</khip:triggers>
-			</khip:operation>
-			<khip:operation name="send_HCl">
-				<khip:executeCommand name="inject" node="HCl_syringe">
-					<khic:attributes>
-						<khic:attribute name="volume">80</khic:attribute>
-						<khic:attribute name="flowRate">30</khic:attribute>
-					</khic:attributes>
-				</khip:executeCommand>
-				<khip:triggers>
-					<khip:eventListeners>
-						<khip:eventListener name="setup_hcl_ok" node="HCl_syringe" event="DONE">send_NaOH</khip:eventListener>
-					</khip:eventListeners>
-					<khip:errors>
-						<khip:error name="setup_error" node="HCl_syringe" event="UNEXPECTED_STOP"/>
-					</khip:errors>
-				</khip:triggers>
-			</khip:operation>
-			<khip:operation name="send_NaOH">
-				<khip:executeCommand name="inject" node ="NaOH_syringe">
-					<khic:attributes>
-						<khic:attribute name="volume">20</khic:attribute>
-						<khic:attribute name="flowRate">30</khic:attribute>
-					</khic:attributes>
-				</khip:executeCommand>
-			</khip:operation>
-			<khip:operation name="react">
-				<khip:executeCommand name="setTemperature" node="TheReactor">
-					<khic:attributes>
-						<khic:attribute name="temp" type="double">120.0</khic:attribute>
-					</khic:attributes>
-				</khip:executeCommand>
-			</khip:operation>
-		</khip:operations>
+            <khip:operation name="setup_HCl">
+                <khip:executeCommand name="MOVE_TO_UPPER_STOP" node="HCl_syringe"/>
+                <khip:triggers>
+                    <khip:eventListeners>
+                        <khip:eventListener name="wait_for_upper_op" event="UPPER_STOP" node="HCl_syringe">send_HCl</khip:eventListener>
+                    </khip:eventListeners>
+                    <khip:errors>
+                        <khip:error name="unexpected_stop" event="UNEXPECTED_STOP" node="HCl_syringe"/>
+                    </khip:errors>
+                </khip:triggers>
+            </khip:operation>
+            <khip:operation name="send_HCl">
+                <khip:executeCommand name="inject" node="HCl_syringe">
+                    <khic:attributes>
+                        <khic:attribute name="volume">80</khic:attribute>
+                        <khic:attribute name="flowRate">30</khic:attribute>
+                    </khic:attributes>
+                </khip:executeCommand>
+                <khip:triggers>
+                    <khip:eventListeners>
+                        <khip:eventListener name="setup_hcl_ok" node="HCl_syringe" event="DONE">send_NaOH</khip:eventListener>
+                    </khip:eventListeners>
+                    <khip:errors>
+                        <khip:error name="setup_error" node="HCl_syringe" event="UNEXPECTED_STOP"/>
+                    </khip:errors>
+                </khip:triggers>
+            </khip:operation>
+            <khip:operation name="send_NaOH">
+                <khip:executeCommand name="inject" node="NaOH_syringe">
+                    <khic:attributes>
+                        <khic:attribute name="volume">20</khic:attribute>
+                        <khic:attribute name="flowRate">30</khic:attribute>
+                    </khic:attributes>
+                </khip:executeCommand>
+                <khip:triggers>
+                    <khip:eventListeners>
+                        <khip:eventListener name="setup_naoh_ok" node="NaOH_syringe" event="DONE">react</khip:eventListener>
+                    </khip:eventListeners>
+                </khip:triggers>
+            </khip:operation>
+            <khip:operation name="react">
+                <khip:executeCommand name="setTemperature" node="TheReactor">
+                    <khic:attributes>
+                        <khic:attribute name="temp" type="double">120.0</khic:attribute>
+                    </khic:attributes>
+                </khip:executeCommand>
+            </khip:operation>
+        </khip:operations>
     </khip:plan>
 </khip:khiprocess>

@@ -73,7 +73,7 @@ public class ArduinoProgram {
     }
 
     public void saveToFile(File file) throws IOException {
-        if (file.getParentFile().mkdirs()) {
+        if (file.getParentFile().exists() || file.getParentFile().mkdirs()) {
             FileOutputStream fos = new FileOutputStream(file);
             fos.write(this.toString().getBytes());
         }

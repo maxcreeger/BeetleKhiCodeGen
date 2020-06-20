@@ -4,12 +4,6 @@
 			xmlns:khic="http://www.example.com/beetlekhi/command"
 			name="mReactorByBernard">
 	<code>
-		<setup>
-<![CDATA[
-
-
-]]>
-		</setup>
 		<loop>
 <![CDATA[
   pollTemperature();
@@ -30,7 +24,7 @@ void pollTemperature(){
 		<commands>
 			<khic:command name="setTemperature" keyword="SET_TEMP">
 				<khic:attributes>
-					<khic:attribute name="temp" type="double">targetTemperature</khic:attribute>
+					<khic:attribute name="temp" type="double" order="1">targetTemperature</khic:attribute>
 				</khic:attributes>
 				<khic:timeout>10000</khic:timeout>
 				<khic:response>
@@ -42,7 +36,7 @@ void pollTemperature(){
 		<sensors>
 			<sensor name="TEMPERATURE">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="int"/>
+					<khic:attribute name="VALUE" type="int" order="1"/>
 				</khic:attributes>
 			</sensor>
 		</sensors>

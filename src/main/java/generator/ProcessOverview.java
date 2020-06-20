@@ -44,8 +44,7 @@ public class ProcessOverview {
 	public void generateMasterProgram() throws InvalidKhiProcessException, UnavailableCommandException, InvalidStateException {
 		// TODO generateMasterProgram to drive the Khi Network
 		StringBuilder code = new StringBuilder();
-		code.append("void loop(){")
-			.append("\n");
+		code.append("void loop(){\n");
 	}
 
 	public static String defaultValueForType(String type) {
