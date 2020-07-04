@@ -18,14 +18,34 @@ public class LinkedOperation {
     public final ProcessOverview parentProcess;
     final Operation operation;
     public boolean running;
-    List<LinkedTrigger> linkedTriggers = new ArrayList<>();
-    List<LinkedErrorOccurrence> linkedErrors = new ArrayList<>();
-    List<LinkedCommand> linkedCommands = new ArrayList<>();
+    private final List<LinkedTrigger> linkedTriggers = new ArrayList<>();
+    private final List<LinkedErrorOccurrence> linkedErrors = new ArrayList<>();
+    private final List<LinkedCommand> linkedCommands = new ArrayList<>();
 
     public LinkedOperation(ProcessOverview runtimeKhiProcess, Operation op) {
         this.parentProcess = runtimeKhiProcess;
         this.operation = op;
-        parentProcess.linkedOperations.add(this);
+        parentProcess.getLinkedOperations().add(this);
+    }
+
+    public List<LinkedTrigger> getLinkedTriggers() {
+        return linkedTriggers;
+    } // TODO make immutable
+
+    public List<LinkedErrorOccurrence> getLinkedErrors() {
+        return linkedErrors;
+    }// TODO make immutable
+
+    public List<LinkedCommand> getLinkedCommands() {
+        return linkedCommands;
+    }// TODO make immutable
+
+    public void add(LinkedTrigger trigger) {
+        linkedTriggers.add(trigger);
+    }
+
+    public String getName() {
+        return operation.getName();
     }
 
     public String makeControllerCode() {

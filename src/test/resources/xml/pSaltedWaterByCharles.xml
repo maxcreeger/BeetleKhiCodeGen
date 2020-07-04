@@ -2,7 +2,7 @@
 <khip:khiprocess
         xmlns:khip="http://www.example.com/beetlekhi/process"
         xmlns:khic="http://www.example.com/beetlekhi/command"
-        name="essai">
+        name="Stupid Salted Water Process">
     <khip:Nodes>
         <khip:Node name="NaOH_syringe">
             <khip:module>mSyringeByAlexandre</khip:module>

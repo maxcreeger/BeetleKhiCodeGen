@@ -13,6 +13,6 @@ public class LinkedErrorOccurrence {
 		this.linkedOperation = linkedOperation;
 		this.event = event;
 		this.error = error;
-		this.linkedOperation.linkedErrors.add(this);
+		this.linkedOperation.getLinkedErrors().add(this); // TODO strange way to do it, reverse control?
 	}
 }

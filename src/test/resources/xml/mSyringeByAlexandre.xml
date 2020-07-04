@@ -66,19 +66,19 @@ void UpperLimitSwitchISR() {
 		<sensors>
 			<sensor name="VOLUME">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="double" order="1"/>
+					<khic:attribute name="Volume" type="double" order="1"/>
 				</khic:attributes>
 				<variableReference name="iCurrentVolume"/>
 			</sensor>
 			<sensor name="UPPER_STOP">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="boolean" order="1"/>
+					<khic:attribute name="Upper Stop" type="boolean" order="1"/>
 				</khic:attributes>
 				<variableReference name="bUpperLimit"/>
 			</sensor>
 			<sensor name="LOWER_STOP">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="boolean" order="1"/>
+					<khic:attribute name="Lower Stop" type="boolean" order="1"/>
 				</khic:attributes>
 				<variableReference name="bLowerLimit"/>
 			</sensor>

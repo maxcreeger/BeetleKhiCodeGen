@@ -1,7 +1,7 @@
 package parsing;
 
+import beetlkhi.utils.xsd.ElementFilter;
 import exceptions.*;
-import generator.ArduinoProgram;
 import generator.ProcessOverview;
 import linker.*;
 import test.beetlekhi.command.Command;
@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class ProcessLinker {
 
     private final Khiprocess process;
+
     private final Map<String, Khimodule> moduleLookup;
     private final Map<String, Node> nodeLookup;
     private final Map<String, Operation> operationLookup;
@@ -32,9 +33,25 @@ public class ProcessLinker {
         this.operationLookup = buildOperationLookup(process);
     }
 
+    public Khiprocess getProcess() {
+        return process;
+    }
+
+    public Map<String, Khimodule> getModuleLookup() {
+        return moduleLookup;
+    }
+
+    public Map<String, Node> getNodeLookup() {
+        return nodeLookup;
+    }
+
+    public Map<String, Operation> getOperationLookup() {
+        return operationLookup;
+    }
+
     private Map<String, Node> buildNodeLookup(Khiprocess process) throws InvalidKhiProcessException {
         Map<String, Node> moduleMap = new HashMap<>();
-        Optional<Nodes> nodes = ArduinoProgram.getClass(process.getNodesOrPlan(), Nodes.class);
+        Optional<Nodes> nodes = ElementFilter.getClass(process.getNodesOrPlan(), Nodes.class);
         if (nodes.isPresent() && !nodes.get().getNode().isEmpty()) {
             System.out.println("[Reading] " + nodes.get().getNode().size() + " Process Nodes:");
             for (Node node : nodes.get().getNode()) {
@@ -52,7 +69,7 @@ public class ProcessLinker {
 
     private Map<String, Operation> buildOperationLookup(Khiprocess process) throws InvalidKhiProcessException {
         Map<String, Operation> operationMap = new HashMap<>();
-        Optional<Plan> plan = ArduinoProgram.getClass(process.getNodesOrPlan(), Plan.class);
+        Optional<Plan> plan = ElementFilter.getClass(process.getNodesOrPlan(), Plan.class);
         if (plan.isPresent() && !plan.get().getOperations().getOperation().isEmpty()) {
             System.out.println("[Reading] " + plan.get().getOperations().getOperation().size() + " Process Operations:");
             for (Operation operation : plan.get().getOperations().getOperation()) {
@@ -92,7 +109,7 @@ public class ProcessLinker {
         // Browse operations
         Map<String, LinkedCommand> linkedCommandLookup = new HashMap<>();
         System.out.println("[LINKING] ExecuteCommand to Command:");
-        Optional<Plan> plan = ArduinoProgram.getClass(process.getNodesOrPlan(), Plan.class);
+        Optional<Plan> plan = ElementFilter.getClass(process.getNodesOrPlan(), Plan.class);
         if (plan.isPresent()) {
             for (Operation operation : plan.get()
                     .getOperations()
@@ -114,9 +131,9 @@ public class ProcessLinker {
                     linkedCommandLookup.put(operation.getName() + "_" + exec.getName(), linkedCommand);
 
                     Command moduleCommand = null;
-                    Optional<Communication> communication = ArduinoProgram.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
+                    Optional<Communication> communication = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
                     if (communication.isPresent()) {
-                        Optional<Commands> commands = ArduinoProgram.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
+                        Optional<Commands> commands = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
                         if (commands.isPresent()) {
                             for (Command availableCommand : commands.get().getCommand()) {
                                 if (exec.getName()
@@ -147,17 +164,18 @@ public class ProcessLinker {
 
     private void prepareTriggers(Map<String, LinkedNode> linkedNodeLookup, Map<String, LinkedOperation> linkedOperationLookup, Operation operation,
                                  LinkedOperation linkedOperation) throws InvalidKhiProcessException {
-        if (operation.getTriggers()
-                .getEventListeners() != null && operation.getTriggers()
-                .getEventListeners() != null) {
+        if (operation.getTriggers() != null &&
+                operation.getTriggers().getEventListeners() != null) {
             for (EventListener eventListener : operation.getTriggers()
                     .getEventListeners()
                     .getEventListener()) {
                 // Validate attribute 'node'
                 LinkedNode linkedNode = linkedNodeLookup.get(eventListener.getNode());
                 if (linkedNode == null) {
-                    throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName()
-                            + "' defines listener '" + eventListener.getName() + " on node '" + eventListener.getNode()
+                    throw new InvalidKhiProcessException("Process '" + process.getName() +
+                            "', operation '" + operation.getName()
+                            + "' defines listener '" + eventListener.getName() +
+                            " on node '" + eventListener.getNode()
                             + "' but no such node is defined in the process. Available nodes: " + nodeLookup.keySet());
                 }
                 Khimodule module = linkedNode.getKhiModule();
@@ -175,15 +193,14 @@ public class ProcessLinker {
                 }
                 LinkedOperation nextLinkedOperation = linkedOperationLookup.get(nextOperationName);
                 LinkedTrigger linkedTrigger = new LinkedTrigger(eventListener, event, nextLinkedOperation);
-                linkedNode.add(linkedTrigger);
+                linkedOperation.add(linkedTrigger);
 
                 // Print
-                System.out.println("  |  + Event '" + eventListener.getName() + " sent by node '" + eventListener.getNode() + "'");
+                System.out.println("  |  + Event '" + eventListener.getName() + "' sent by node '" + eventListener.getNode() + "'");
                 System.out.println("  |  | --> Message '" + eventListener.getEvent() + "' triggers Operation '" + eventListener.getValue() + "'");
             }
         }
-        if (operation.getTriggers()
-                .getErrors() != null && operation.getTriggers()
+        if (operation.getTriggers() != null && operation.getTriggers()
                 .getErrors() != null) {
             for (Error error : operation.getTriggers()
                     .getErrors()
@@ -211,13 +228,13 @@ public class ProcessLinker {
         // Validate attribute 'event'
         String eventName = error.getEvent();
         Event event = null;
-        Optional<Communication> communication = ArduinoProgram.getClass(module.getCodeOrCommunicationOrHardware(), Communication.class);
+        Optional<Communication> communication = ElementFilter.getClass(module.getCodeOrCommunicationOrHardware(), Communication.class);
         if (!communication.isPresent()) {
             throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName() + "' defines error '"
                     + error.getName() + " for event '" + eventName + "' on node '" + error.getNode() + "' implemented by module '"
                     + module.getName() + "' but this module does not define any Communication at all");
         }
-        Optional<Events> events = ArduinoProgram.getClass(communication.get().getCommandsOrSensorsOrEvents(), Events.class);
+        Optional<Events> events = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Events.class);
         if (!events.isPresent()) {
             throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName() + "' defines error '"
                     + error.getName() + " for event '" + eventName + "' on node '" + error.getNode() + "' implemented by module '"
@@ -240,13 +257,13 @@ public class ProcessLinker {
     private Event findEvent(Operation operation, EventListener eventListener, Khimodule module) throws InvalidKhiProcessException {
         String eventName = eventListener.getEvent();
         Event event = null;
-        Optional<Communication> communication = ArduinoProgram.getClass(module.getCodeOrCommunicationOrHardware(), Communication.class);
+        Optional<Communication> communication = ElementFilter.getClass(module.getCodeOrCommunicationOrHardware(), Communication.class);
         if (!communication.isPresent()) {
             throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName()
                     + "' defines listener '" + eventListener.getName() + " for event '" + eventName + "' on node '" + eventListener.getNode()
                     + "' implemented by module '" + module.getName() + "' but this module does not define any Communication at all");
         }
-        Optional<Events> events = ArduinoProgram.getClass(communication.get().getCommandsOrSensorsOrEvents(), Events.class);
+        Optional<Events> events = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Events.class);
         if (!events.isPresent()) {
             throw new InvalidKhiProcessException("Process '" + process.getName() + "', operation '" + operation.getName()
                     + "' defines listener '" + eventListener.getName() + " for event '" + eventName + "' on node '" + eventListener.getNode()
@@ -278,9 +295,9 @@ public class ProcessLinker {
      */
     private LinkedCommand findCommand(LinkedOperation linkedOperation, ExecuteCommand exec, LinkedNode linkedNode) throws InvalidKhiProcessException {
         LinkedCommand linkedCommand = null;
-        Optional<Communication> communication = ArduinoProgram.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
+        Optional<Communication> communication = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
         if (communication.isPresent()) {
-            Optional<Commands> commands = ArduinoProgram.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
+            Optional<Commands> commands = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
             if (commands.isPresent()) {
                 for (Command command : commands.get().getCommand()) {
                     if (exec.getName().equals(command.getName())) {
@@ -301,7 +318,7 @@ public class ProcessLinker {
 
     private Map<String, LinkedOperation> prepareOperations(ProcessOverview root) throws InvalidKhiProcessException {
         // Prepare operations
-        Optional<Plan> plan = ArduinoProgram.getClass(process.getNodesOrPlan(), Plan.class);
+        Optional<Plan> plan = ElementFilter.getClass(process.getNodesOrPlan(), Plan.class);
         if (!plan.isPresent()) {
             throw new InvalidKhiProcessException("The process '" + process.getName() + "' has no Plan");
         }
@@ -347,4 +364,5 @@ public class ProcessLinker {
         System.out.println();
         return linkedNodeLookup;
     }
+
 }

@@ -1,24 +1,21 @@
 package generator;
 
+import beetlkhi.utils.xsd.ElementFilter;
 import linker.LinkedNode;
 import test.beetlekhi.command.Attribute;
 import test.beetlekhi.command.Command;
 import test.beetlekhi.module.*;
-import test.beetlekhi.process.Operation;
 
 import javax.xml.bind.JAXBElement;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-public class ArduinoProgram {
+public class SlaveProgram {
 
     final LinkedNode linkedNode;
-    Map<Operation, StringBuilder> events = new HashMap<>();
 
     /*
      * Data Type    Size                  Range                  Common name
@@ -48,7 +45,7 @@ public class ArduinoProgram {
         }
     }
 
-    public ArduinoProgram(LinkedNode linkedNode) {
+    public SlaveProgram(LinkedNode linkedNode) {
         this.linkedNode = linkedNode;
     }
 
@@ -84,7 +81,7 @@ public class ArduinoProgram {
         includes.append("\n\n// Includes");
         includes.append("\n#include <Wire.h>\n#include <stdio.h>");
         List<Object> codeOrCommunicationOrHardware = linkedNode.getKhiModule().getCodeOrCommunicationOrHardware();
-        Optional<Code> code = getClass(codeOrCommunicationOrHardware, Code.class);
+        Optional<Code> code = ElementFilter.getClass(codeOrCommunicationOrHardware, Code.class);
         if (code.isPresent()) {
             Optional<Libraries> libraries = code.get().getLibrariesOrStateVariablesOrSetup()
                     .stream()
@@ -100,14 +97,6 @@ public class ArduinoProgram {
             }
         }
         return includes;
-    }
-
-    public static <T> Optional<T> getClass(List<Object> objectList, Class<T> clazz) {
-        return objectList
-                .stream()
-                .filter(obj -> obj.getClass() == clazz)
-                .map(clazz::cast)
-                .findAny();
     }
 
     private StringBuilder constructHelpers() {
@@ -180,9 +169,9 @@ public class ArduinoProgram {
     private StringBuilder constructEventVariablesDeclaration() {
         StringBuilder program = new StringBuilder();
         program.append("\n\n// Event Variables");
-        Optional<Communication> communication = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
+        Optional<Communication> communication = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
         if (communication.isPresent()) {
-            Optional<Events> events = getClass(communication.get().getCommandsOrSensorsOrEvents(), Events.class);
+            Optional<Events> events = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Events.class);
             if (events.isPresent() &&
                     events.get().getEvent() != null) {
                 for (Event event : events.get().getEvent()) {
@@ -204,9 +193,9 @@ public class ArduinoProgram {
     private StringBuilder constructSensorVariablesDeclaration() {
         StringBuilder program = new StringBuilder();
         program.append("\n\n// State Variables (Sensor values)");
-        Optional<Code> code = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
+        Optional<Code> code = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
         if (code.isPresent()) {
-            Optional<StateVariables> stateVariables = getClass(code.get().getLibrariesOrStateVariablesOrSetup(), StateVariables.class);
+            Optional<StateVariables> stateVariables = ElementFilter.getClass(code.get().getLibrariesOrStateVariablesOrSetup(), StateVariables.class);
             if (stateVariables.isPresent() && stateVariables.get()
                     .getStateVariable() != null) {
                 for (StateVariable var : stateVariables.get().getStateVariable()) {
@@ -234,9 +223,9 @@ public class ArduinoProgram {
     private StringBuilder constructCommandVariables() {
         StringBuilder program = new StringBuilder();
         program.append("\n\n// Received Commands");
-        Optional<Communication> communication = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
+        Optional<Communication> communication = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
         if (communication.isPresent()) {
-            Optional<Commands> commands = getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
+            Optional<Commands> commands = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
             if (commands.isPresent()) {
                 for (Command cmd : commands.get().getCommand()) {
                     if (cmd.getAttributes() != null && cmd.getAttributes()
@@ -259,7 +248,7 @@ public class ArduinoProgram {
     }
 
     private StringBuilder constructSetupMethod() {
-        Optional<Code> code = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
+        Optional<Code> code = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
         StringBuilder program = new StringBuilder();
         if (code.isPresent()) {
             for (Object obj : code.get().getLibrariesOrStateVariablesOrSetup()) {
@@ -292,7 +281,7 @@ public class ArduinoProgram {
     }
 
     private StringBuilder constructLoopMethod() {
-        Optional<Code> code = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
+        Optional<Code> code = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
         StringBuilder program = new StringBuilder();
         program.append("\n\nvoid loop() {");
         program.append("\n  delay(100);");
@@ -331,11 +320,11 @@ public class ArduinoProgram {
      * MSG BODY: une série de bytes codant pour le corps du message.
      */
     private StringBuilder constructReceiveI2cMessageMethod() {
-        Optional<Communication> communication = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
+        Optional<Communication> communication = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
         if (!communication.isPresent()) {
             return noCommunication();
         }
-        Optional<Commands> commands = getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
+        Optional<Commands> commands = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
         if (!commands.isPresent()) {
             return noCommunication();
         }
@@ -441,9 +430,9 @@ public class ArduinoProgram {
 
     private String constructMethods() {
         StringBuilder methodsDeclaration = new StringBuilder("\n\n// Methods dedicated to the module:\n");
-        Optional<Code> code = getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
+        Optional<Code> code = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Code.class);
         if (code.isPresent()) {
-            Optional<Methods> methods = getClass(code.get().getLibrariesOrStateVariablesOrSetup(), Methods.class);
+            Optional<Methods> methods = ElementFilter.getClass(code.get().getLibrariesOrStateVariablesOrSetup(), Methods.class);
             if (methods.isPresent()) {
                 for (Method method : methods.get().getMethod()) {
                     methodsDeclaration.append("\nvoid ")

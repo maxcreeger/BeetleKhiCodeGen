@@ -36,7 +36,7 @@ void pollTemperature(){
 		<sensors>
 			<sensor name="TEMPERATURE">
 				<khic:attributes>
-					<khic:attribute name="VALUE" type="int" order="1"/>
+					<khic:attribute name="Temperature" type="int" order="1"/>
 				</khic:attributes>
 			</sensor>
 		</sensors>

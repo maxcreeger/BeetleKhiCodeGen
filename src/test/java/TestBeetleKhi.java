@@ -1,5 +1,6 @@
 
-import generator.ArduinoProgram;
+import generator.MasterProgram;
+import generator.SlaveProgram;
 import generator.ProcessOverview;
 import gui.ModuleMonitor;
 import linker.LinkedNode;
@@ -9,6 +10,7 @@ import parsing.ProcessLinker;
 import test.beetlekhi.module.Khimodule;
 import test.beetlekhi.process.Khiprocess;
 
+import javax.swing.*;
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
@@ -27,37 +29,53 @@ public class TestBeetleKhi {
     public void main() throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidKhiModuleException,
             exceptions.UnavailableCommandException, exceptions.InvalidStateException, IOException {
         // Read Modules
-        File syringe = new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\mSyringeByAlexandre.xml");
-        File reactor = new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\mReactorByBernard.xml");
+        File syringe = new File("./src/test/resources/xml/mSyringeByAlexandre.xml");
+        File reactor = new File("./src/test/resources/xml/mReactorByBernard.xml");
         List<Khimodule> repository = Parser.readModules(syringe, reactor);
 
         // Read process
-        Khiprocess oxygenatedWater = Parser.readProcess(new File("C:\\Users\\Marmotte\\IdeaProjects\\BeetleKhiCodeGen\\src\\test\\resources\\xml\\pSaltedWaterByCharles.xml"));
+        Khiprocess saltedWater = Parser.readProcess(new File("./src/test/resources/xml/pSaltedWaterByCharles.xml"));
 
         // Build process and link to modules from the repo
-        ProcessLinker linker = new ProcessLinker(repository, oxygenatedWater);
+        ProcessLinker linker = new ProcessLinker(repository, saltedWater);
         ProcessOverview process = linker.assemble();
 
-        Map<LinkedNode, ArduinoProgram> programs = process.generateNodePrograms();
+        Map<LinkedNode, SlaveProgram> programs = process.generateNodePrograms();
         System.out.println();
         System.out.println();
         System.out.println("Generated Programs:");
-        for (Entry<LinkedNode, ArduinoProgram> prog : programs.entrySet()) {
+        for (Entry<LinkedNode, SlaveProgram> prog : programs.entrySet()) {
             String nodeName = prog.getKey().node.getName();
-            ArduinoProgram sourceCode = prog.getValue();
+            SlaveProgram slaveSourceCode = prog.getValue();
             File file = new File("./target/generated-test-sources/arduino-programs/" + nodeName + ".c");
-            sourceCode.saveToFile(file);
+            slaveSourceCode.saveToFile(file);
             System.out.println(" + " + nodeName + ".c program generated");
         }
         // Simulate
         System.out.println("-----------+ Master program +------------------------");
-        process.generateMasterProgram();
+        MasterProgram masterProgram = new MasterProgram(process);
+        File masterFile = new File("./target/generated-test-sources/arduino-programs/master.c");
+        masterProgram.saveToFile(masterFile);
         // TODO add C library loading
         // TODO read sensors tag
         // TODO link sensor variableReference to code/variables
+        JFrame frame = newFrame(saltedWater.getName());
         for (LinkedNode node : programs.keySet()) {
-            new ModuleMonitor(node).display();
+            frame.add(new ModuleMonitor(node).getPanel());
         }
+        frame.pack();
+
+        process.begin("COM1");
+    }
+
+    public JFrame newFrame(String title) {
+        JFrame frame = new JFrame(title);
+        frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.PAGE_AXIS));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+        return frame;
+
     }
 
 }
