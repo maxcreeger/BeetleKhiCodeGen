@@ -1,7 +1,6 @@
 package linker;
 
 import beetlkhi.utils.xsd.ElementFilter;
-import generator.ProcessOverview;
 import test.beetlekhi.command.Attribute;
 import test.beetlekhi.command.Attributes;
 import test.beetlekhi.module.Communication;
@@ -25,14 +24,11 @@ public class LinkedNode {
     private final Khimodule khiModule;
     public final List<LinkedCommand> availableCommands = new ArrayList<>();
     public final List<LinkedSensor> availableSensors = new ArrayList<>();
-    final ProcessOverview root;
 
-    public LinkedNode(ProcessOverview root, Node node, Khimodule khiModule) {
+    public LinkedNode(Node node, Khimodule khiModule) {
         super();
         this.node = node;
         this.khiModule = khiModule;
-        this.root = root;
-        root.add(this);
     }
 
     public String getName(){

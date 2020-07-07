@@ -1,9 +1,6 @@
 package generator;
 
-import linker.LinkedCommand;
-import linker.LinkedNode;
-import linker.LinkedOperation;
-import linker.LinkedTrigger;
+import linker.*;
 import test.beetlekhi.module.Khimodule;
 
 import java.io.File;
@@ -74,8 +71,8 @@ public class MasterProgram {
         int nbSteps = overview.getLinkedOperations().size() + 1; // + 1 for init
 
         // Steps
-        stateMachine.append("\n#define nbSteps       ").append(nbSteps).append(";");
-        stateMachine.append("\n#define step_khi_setup 0;");
+        stateMachine.append("\n#define nbSteps ").append(nbSteps).append(";");
+        stateMachine.append("\n#define step_khi_emer 0;");
         int i = 1;
         for (LinkedOperation operation : overview.getLinkedOperations()) {
             stateMachine.append("\n#define step_").append(operation.getName()).append(" ").append(i++).append(";");
@@ -87,16 +84,16 @@ public class MasterProgram {
                 .mapToInt(operation -> operation.getLinkedTriggers().size())
                 .sum() + 1; // + 1 for init
         stateMachine.append("\n#define nbTransitions ").append(nbTransitions).append(";");
-        stateMachine.append("\n#define tran_khi_setup_").append(overview.getInit().getName()).append(" 0;");
-        i = 1;
+        i = 0;
         for (LinkedOperation operation : overview.getLinkedOperations()) {
             for (LinkedTrigger trigger : operation.getLinkedTriggers()) {
                 stateMachine.append("\n#define tran_").append(operation.getName()).append("_").append(trigger.getNextLinkedOperation().getName()).append(" ").append(i++).append(";");
             }
         }
-        stateMachine.append("\n#define initialStep step_khi_setup;");
+        stateMachine.append("\n#define initialStep step_").append(overview.getInit().getName()).append(";");
         stateMachine.append("\n// State values");
         stateMachine.append("\nbool transitions[nbTransitions];");
+        stateMachine.append("\nint stateStartTime[nbSteps];");
         stateMachine.append("\nbool steps[nbSteps + 2];");
         stateMachine.append("\nint currentState = initialStep;");
         return stateMachine;
@@ -104,14 +101,32 @@ public class MasterProgram {
 
     private StringBuilder constructTriggersReceived() {
         StringBuilder triggersReceived = new StringBuilder();
-        triggersReceived.append("\n\n// Triggers Received:");
-        for (LinkedOperation operation : overview.getLinkedOperations()) {
-            triggersReceived.append("\n// + During Operation ").append(operation.getName());
-            if (operation.getLinkedTriggers().isEmpty()) {
-                triggersReceived.append("\n//   -> No triggers for this Operation");
+        triggersReceived.append("\n\n// Events Received:");
+        Set<String> eventsEncountered = new HashSet<>();
+        Set<String> errorsEncountered = new HashSet<>();
+        Map<String, Set<String>> nodeEvents = new HashMap<>();
+        for (LinkedNode node : overview.getLinkedNodes()) {
+            nodeEvents.put(node.getName(), new HashSet<>());
+        }
+        for (LinkedOperation linkedOperation : overview.getLinkedOperations()) {
+            for (LinkedTrigger linkedTrigger : linkedOperation.getLinkedTriggers()) {
+                for (LinkedTrigger.LinkedEventListener linkedEventListener : linkedTrigger.getAllInternalEvents()) {
+                    nodeEvents.get(linkedEventListener.getEmitterNode()).add(linkedEventListener.getEvent().getName());
+                }
+            }
+            for (LinkedErrorOccurrence linkedErrorOccurrence : linkedOperation.getLinkedErrors()) {
+                String nodeName = linkedErrorOccurrence.getFailedNode().getName();
+                String event = linkedErrorOccurrence.getEvent().getName();
+                nodeEvents.get(nodeName).add(event);
+            }
+        }
+        for (Map.Entry<String, Set<String>> entry : nodeEvents.entrySet()) {
+            triggersReceived.append("\n// + Events from node '").append(entry.getKey() + "'");
+            if (entry.getValue().isEmpty()) {
+                triggersReceived.append("\n//   -> No Events for this Node");
             } else {
-                for (LinkedTrigger trigger : operation.getLinkedTriggers()) {
-                    triggersReceived.append("\nbool ").append(trigger.getEmitterNode()).append("_").append(trigger.getEvent().getName()).append(" = false;");
+                for (String event : entry.getValue()) {
+                    triggersReceived.append("\nbool ").append(entry.getKey()).append("_").append(event).append(" = false;");
                 }
             }
         }
@@ -166,10 +181,11 @@ public class MasterProgram {
         StringBuilder program = new StringBuilder();
         program.append("\n\nvoid computeTransitions() {");
         for (LinkedOperation operation : overview.getLinkedOperations()) {
-            for (LinkedTrigger trigger : operation.getLinkedTriggers()) {
-                String transitionName = "tran_" + operation.getName() + "_" + trigger.getNextLinkedOperation().getName();
+            for (LinkedTrigger linkedTrigger : operation.getLinkedTriggers()) {
+                StringBuilder condition = linkedTrigger.constructTransitionCondition();
+                String transitionName = "tran_" + operation.getName() + "_" + linkedTrigger.getNextLinkedOperation().getName();
                 String stepName = "step_" + operation.getName();
-                program.append("\n  transitions[").append(transitionName).append("] = steps[").append(stepName).append("] && ").append(trigger.getEmitterNode()).append("_").append(trigger.getEvent().getName()).append(";");
+                program.append("\n  transitions[").append(transitionName).append("] = steps[").append(stepName).append("] && ").append(condition).append(";");
             }
         }
         program.append("\n}");
@@ -195,21 +211,31 @@ public class MasterProgram {
         program.append("\n\nvoid activateSteps() {");
         for (LinkedOperation operation : overview.getLinkedOperations()) {
             for (LinkedTrigger trigger : operation.getLinkedTriggers()) {
-                String transitionName = "tran_" + operation.getName() + "_" + trigger.getNextLinkedOperation().getName();
-                LinkedOperation nextOp = trigger.getNextLinkedOperation();
-                String nextStepName = nextOp.getName();
-                program.append("\n  if(transitions[").append(transitionName).append("]) {");
-                program.append("\n    steps[step_").append(nextStepName).append("] = true;");
-                for (LinkedCommand command : nextOp.getLinkedCommands()) {
-                    String callParameters = command.getAttributes().constructMethodCall();
-                    callParameters = command.getTarget().getName() + "_Address" + (callParameters.isEmpty() ? "" : ", " + callParameters);
-                    program.append("\n    execute_").append(command.getName()).append("(").append(callParameters).append(");");
-                }
-                program.append("\n    transitions[").append(transitionName).append("] = false;");
-                program.append("\n  }");
+                program.append(constructActivateStepsBlock(operation, trigger.getNextLinkedOperation()));
             }
         }
         program.append("\n}");
+        return program;
+    }
+
+    static StringBuilder constructActivateStepsBlock(LinkedOperation operation, LinkedOperation nextOperation) {
+        StringBuilder program = new StringBuilder();
+        String transitionName = "tran_" + operation.getName() + "_" + nextOperation.getName();
+        program.append("\n  if(transitions[").append(transitionName).append("]) {");
+        program.append("\n    steps[step_").append(nextOperation.getName()).append("] = true;");
+        program.append("\n    stateStartTime[step_").append(nextOperation.getName()).append("] = millis();");
+        nextOperation.getLinkedCommands().forEach(command ->
+                program.append(constructExecuteCommand(command)));
+        program.append("\n    transitions[").append(transitionName).append("] = false;");
+        program.append("\n  }");
+        return program;
+    }
+
+    static StringBuilder constructExecuteCommand(LinkedCommand command) {
+        StringBuilder program = new StringBuilder();
+        String callParameters = command.getAttributes().constructMethodCall();
+        callParameters = command.getTarget().getName() + "_Address" + (callParameters.isEmpty() ? "" : ", " + callParameters);
+        program.append("\n    execute_").append(command.getName()).append("(").append(callParameters).append(");");
         return program;
     }
 
@@ -236,7 +262,7 @@ public class MasterProgram {
                 .collect(Collectors.toSet());
         program.append("\n\n// Actions of Modules");
         for (Khimodule module : modulesUnique) {
-            program.append("\n\n// Actions for Modules of type ").append(module.getName());
+            program.append("\n// Actions for Modules of type ").append(module.getName());
             for (LinkedNode nodes : modules.get(module)) {
                 for (LinkedCommand command : nodes.getAvailableCommands()) {
                     if (usedCommandsUnique.contains(command)) {

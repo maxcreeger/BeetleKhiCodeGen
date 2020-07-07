@@ -1,18 +1,34 @@
 package linker;
 
+import parsing.ProcessLinker;
 import test.beetlekhi.module.Event;
 import test.beetlekhi.process.Error;
 
 public class LinkedErrorOccurrence {
 
-	private final LinkedOperation linkedOperation;
-	Error error;
-	Event event;
+	private final Error error;
 
-	public LinkedErrorOccurrence(LinkedOperation linkedOperation, Error error, Event event) {
-		this.linkedOperation = linkedOperation;
+	private final Event event;
+	private final LinkedNode failedNode;
+	private final String errorName;
+
+	public LinkedErrorOccurrence(Error error, Event event, ProcessLinker.NodeLinker nodeLinker) {
 		this.event = event;
 		this.error = error;
-		this.linkedOperation.getLinkedErrors().add(this); // TODO strange way to do it, reverse control?
+		this.failedNode = nodeLinker.lookupLinkedNode(error.getNode());
+		this.errorName = error.getName();
 	}
+
+	public LinkedNode getFailedNode() {
+		return failedNode;
+	}
+
+	public String getErrorName() {
+		return errorName;
+	}
+
+	public Event getEvent() {
+		return event;
+	}
+
 }

@@ -1,6 +1,5 @@
 package linker;
 
-import generator.ProcessOverview;
 import test.beetlekhi.command.Attribute;
 import test.beetlekhi.process.ExecuteCommand;
 import test.beetlekhi.process.Khiprocess;
@@ -15,17 +14,14 @@ import java.util.List;
  */
 public class LinkedOperation {
 
-    public final ProcessOverview parentProcess;
     final Operation operation;
     public boolean running;
     private final List<LinkedTrigger> linkedTriggers = new ArrayList<>();
     private final List<LinkedErrorOccurrence> linkedErrors = new ArrayList<>();
     private final List<LinkedCommand> linkedCommands = new ArrayList<>();
 
-    public LinkedOperation(ProcessOverview runtimeKhiProcess, Operation op) {
-        this.parentProcess = runtimeKhiProcess;
+    public LinkedOperation(Operation op) {
         this.operation = op;
-        parentProcess.getLinkedOperations().add(this);
     }
 
     public List<LinkedTrigger> getLinkedTriggers() {
@@ -46,6 +42,10 @@ public class LinkedOperation {
 
     public String getName() {
         return operation.getName();
+    }
+
+    public Operation getOperation() {
+        return operation;
     }
 
     public String makeControllerCode() {

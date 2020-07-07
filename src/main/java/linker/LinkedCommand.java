@@ -45,7 +45,7 @@ public class LinkedCommand {
         program.append("\n  Wire.write(\"").append(getKeyword()).append("\");");
         program.append(commandAttributes.constructMasterWrite());
         program.append("\n  Wire.endTransmission();");
-        program.append("\n}");
+        program.append("\n}\n");
         return program;
     }
 }

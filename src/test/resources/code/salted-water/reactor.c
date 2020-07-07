@@ -1,6 +1,10 @@
 #include <EEPROM.h>
 #include <Wire.h>
 
+// Event Variables
+
+// State Variables (Sensor values)
+
 int I2CAddress;
 
 void(* resetFunc) (void) = 0;          // Needed for software reset

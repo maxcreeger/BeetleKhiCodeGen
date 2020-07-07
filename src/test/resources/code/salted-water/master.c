@@ -11,43 +11,39 @@
 byte slavesAssigned   = 0x00;
 byte slavesIdentified = 0x00;
 // Table of slave addresses
-byte NaOH_syringe_Address = 0x00;
-byte TheReactor_Address = 0x00;
 byte HCl_syringe_Address = 0x00;
+byte TheReactor_Address = 0x00;
+byte NaOH_syringe_Address = 0x00;
 
 // State machine. Available states:
-#define nbSteps       6;
-#define step_khi_setup 0;
-#define step_react 1;
-#define step_setup_HCl 2;
-#define step_send_HCl 3;
-#define step_send_NaOH 4;
-#define step_khi_emer  5;
-#define nbTransitions 4;
-#define tran_khi_setup_setup_HCl 0;
-#define tran_setup_HCl_send_HCl 1;
+#define nbSteps 6;
+#define step_khi_emer 0;
+#define step_setup_HCl 1;
+#define step_send_NaOH 2;
+#define step_react 3;
+#define step_send_HCl 4;
+#define step_khi_setup 5;
+#define nbTransitions 5;
+#define tran_setup_HCl_send_HCl 0;
+#define tran_send_NaOH_react 1;
 #define tran_send_HCl_send_NaOH 2;
-#define tran_send_NaOH_react 3;
+#define tran_khi_setup_setup_HCl 3;
 #define initialStep step_khi_setup;
 // State values
 bool transitions[nbTransitions];
+int stateStartTime[nbSteps];
 bool steps[nbSteps + 2];
 int currentState = initialStep;
 
-// Triggers Received:
-// + During Operation react
-//   -> No triggers for this Operation
-// + During Operation setup_HCl
-bool HCl_syringe_UPPER_STOP = false;
-bool HCl_syringe_LOWER_STOP = false;
-// + During Operation send_HCl
+// Events Received:
+// + Events from node 'NaOH_syringe'
+bool NaOH_syringe_DONE = false;
+// + Events from node 'HCl_syringe'
 bool HCl_syringe_DONE = false;
 bool HCl_syringe_UNEXPECTED_STOP = false;
-// + During Operation send_NaOH
-bool NaOH_syringe_UPPER_STOP = false;
-bool NaOH_syringe_LOWER_STOP = false;
-bool NaOH_syringe_DONE = false;
-bool NaOH_syringe_UNEXPECTED_STOP = false;
+bool HCl_syringe_UPPER_STOP = false;
+// + Events from node 'TheReactor'
+//   -> No Events for this Node
 
 // TODO: all Wire.endTransmission() calls should check return code
 
@@ -84,51 +80,47 @@ void sendMessages() {
 }
 
 void computeTransitions() {
-  transitions[tran_setup_HCl_send_HCl] = steps[step_setup_HCl] && HCl_syringe_UPPER_STOP;
-  transitions[tran_send_HCl_send_NaOH] = steps[step_send_HCl] && HCl_syringe_DONE;
-  transitions[tran_send_NaOH_react] = steps[step_send_NaOH] && NaOH_syringe_DONE;
+  transitions[tran_setup_HCl_send_HCl] = steps[step_setup_HCl] && (HCl_syringe_UPPER_STOP);
+  transitions[tran_send_NaOH_react] = steps[step_send_NaOH] && (NaOH_syringe_DONE);
+  transitions[tran_send_HCl_send_NaOH] = steps[step_send_HCl] && (HCl_syringe_DONE);
+  transitions[tran_khi_setup_setup_HCl] = steps[step_khi_setup] && (millis() > stateStartTime[step_khi_setup] + 5);
 }
 
 void deactivateSteps() {
   if(transitions[tran_setup_HCl_send_HCl]) steps[step_setup_HCl] = false;
-  if(transitions[tran_send_HCl_send_NaOH]) steps[step_send_HCl] = false;
   if(transitions[tran_send_NaOH_react]) steps[step_send_NaOH] = false;
+  if(transitions[tran_send_HCl_send_NaOH]) steps[step_send_HCl] = false;
+  if(transitions[tran_khi_setup_setup_HCl]) steps[step_khi_setup] = false;
 }
 
 void activateSteps() {
-  if(transitions[tran_khi_setup_setup_HCl]) {
-    steps[step_setup_HCl] = true;
-    execute_MOVE_TO_UPPER_STOP(HCl_syringe_Address);
-    transitions[tran_khi_setup_setup_HCl] = false;
-  }
   if(transitions[tran_setup_HCl_send_HCl]) {
     steps[step_send_HCl] = true;
+    stateStartTime[step_send_HCl] = millis();
     execute_inject(HCl_syringe_Address, 80, 30);
     transitions[tran_setup_HCl_send_HCl] = false;
   }
+  if(transitions[tran_send_NaOH_react]) {
+    steps[step_react] = true;
+    stateStartTime[step_react] = millis();
+    execute_setTemperature(TheReactor_Address, 120.0);
+    transitions[tran_send_NaOH_react] = false;
+  }
   if(transitions[tran_send_HCl_send_NaOH]) {
     steps[step_send_NaOH] = true;
+    stateStartTime[step_send_NaOH] = millis();
     execute_inject(NaOH_syringe_Address, 20, 30);
     transitions[tran_send_HCl_send_NaOH] = false;
   }
-  if(transitions[tran_send_NaOH_react]) {
-    steps[step_react] = true;
-    execute_setTemperature(TheReactor_Address, 120.0);
-    transitions[tran_send_NaOH_react] = false;
+  if(transitions[tran_khi_setup_setup_HCl]) {
+    steps[step_setup_HCl] = true;
+    stateStartTime[step_setup_HCl] = millis();
+    execute_MOVE_TO_UPPER_STOP(HCl_syringe_Address);
+    transitions[tran_khi_setup_setup_HCl] = false;
   }
 }
 
 // Actions of Modules
-
-// Actions for Modules of type mReactorByBernard
-void execute_setTemperature(int nodeAddress, double temp) {
-  Wire.beginTransmission(nodeAddress);
-  Wire.write("SET_TEMP");
-  Wire.write(temp);
-  Wire.endTransmission();
-}
-
-
 // Actions for Modules of type mSyringeByAlexandre
 void execute_inject(int nodeAddress, long volume, int flowRate) {
   Wire.beginTransmission(nodeAddress);
@@ -140,7 +132,16 @@ void execute_inject(int nodeAddress, long volume, int flowRate) {
 
 void execute_MOVE_TO_UPPER_STOP(int nodeAddress) {
   Wire.beginTransmission(nodeAddress);
-  Wire.write("MOVE_TO_LOWER_STOP");
+  Wire.write("MOVE_TO_UPPER_STOP");
+  Wire.endTransmission();
+}
+
+
+// Actions for Modules of type mReactorByBernard
+void execute_setTemperature(int nodeAddress, double temp) {
+  Wire.beginTransmission(nodeAddress);
+  Wire.write("SET_TEMP");
+  Wire.write(temp);
   Wire.endTransmission();
 }
 

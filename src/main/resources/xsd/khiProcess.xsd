@@ -9,7 +9,7 @@
 
     <xs:annotation>
         <xs:appinfo>
-            <jaxb:schemaBindings >
+            <jaxb:schemaBindings>
                 <jaxb:package name="test.beetlekhi.process"/>
             </jaxb:schemaBindings>
         </xs:appinfo>
@@ -58,25 +58,68 @@
     <xs:element name="triggers">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="khip:eventListeners" minOccurs="0"/>
+                <xs:element ref="khip:trigger" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="khip:errors" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    <xs:element name="eventListeners">
+    <xs:element name="trigger">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="khip:eventListener" maxOccurs="unbounded" minOccurs="0"/>
+                <xs:element ref="khip:nextOperation" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="khip:eventListenersLogicalAnd" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
+            <xs:attribute type="xs:string" name="name"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="nextOperation">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string"/>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="eventListenersLogicalAnd">
+        <xs:complexType>
+            <xs:choice>
+                <xs:element ref="khip:eventListener" maxOccurs="unbounded" minOccurs="0"/>
+                <xs:element ref="khip:timer" maxOccurs="unbounded" minOccurs="0"/>
+                <xs:element ref="khip:eventListenersLogicalOr" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="eventListenersLogicalOr">
+        <xs:complexType>
+            <xs:choice>
+                <xs:element ref="khip:eventListener" maxOccurs="unbounded" minOccurs="0"/>
+                <xs:element ref="khip:timer" maxOccurs="unbounded" minOccurs="0"/>
+                <xs:element ref="khip:eventListenersLogicalAnd" maxOccurs="unbounded" minOccurs="0"/>
+            </xs:choice>
         </xs:complexType>
     </xs:element>
     <xs:element name="eventListener">
         <xs:complexType>
+            <xs:attribute type="xs:string" name="name" use="required"/>
+            <xs:attribute type="xs:string" name="node"/>
+            <xs:attribute type="xs:string" name="event"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="nodeListener">
+        <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="name" use="required"/>
                     <xs:attribute type="xs:string" name="node"/>
                     <xs:attribute type="xs:string" name="event"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="timer">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:integer">
+                    <xs:attribute type="xs:string" name="name" use="required"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>

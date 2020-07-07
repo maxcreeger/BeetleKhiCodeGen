@@ -18,15 +18,28 @@
         </khip:Node>
     </khip:Nodes>
     <khip:plan>
-        <khip:initial>setup_HCl</khip:initial>
+        <khip:initial>khi_setup</khip:initial>
         <khip:operations>
             <!-- Set State to RUN-->
+            <khip:operation name="khi_setup">
+                <khip:triggers>
+                    <khip:trigger name="khi_setup_wait">
+                        <khip:nextOperation>setup_HCl</khip:nextOperation>
+                        <khip:eventListenersLogicalAnd>
+                            <khip:timer name="khi_setup_wait_timer">5</khip:timer>
+                        </khip:eventListenersLogicalAnd>
+                    </khip:trigger>
+                </khip:triggers>
+            </khip:operation>
             <khip:operation name="setup_HCl">
                 <khip:executeCommand name="MOVE_TO_UPPER_STOP" node="HCl_syringe"/>
                 <khip:triggers>
-                    <khip:eventListeners>
-                        <khip:eventListener name="wait_for_upper_op" event="UPPER_STOP" node="HCl_syringe">send_HCl</khip:eventListener>
-                    </khip:eventListeners>
+                    <khip:trigger>
+                        <khip:nextOperation>send_HCl</khip:nextOperation>
+                        <khip:eventListenersLogicalAnd>
+                            <khip:eventListener name="wait_for_upper_op" event="UPPER_STOP" node="HCl_syringe"/>
+                        </khip:eventListenersLogicalAnd>
+                    </khip:trigger>
                     <khip:errors>
                         <khip:error name="unexpected_stop" event="UNEXPECTED_STOP" node="HCl_syringe"/>
                     </khip:errors>
@@ -40,9 +53,12 @@
                     </khic:attributes>
                 </khip:executeCommand>
                 <khip:triggers>
-                    <khip:eventListeners>
-                        <khip:eventListener name="setup_hcl_ok" node="HCl_syringe" event="DONE">send_NaOH</khip:eventListener>
-                    </khip:eventListeners>
+                    <khip:trigger>
+                        <khip:nextOperation>send_NaOH</khip:nextOperation>
+                        <khip:eventListenersLogicalAnd>
+                            <khip:eventListener name="send_hcl_ok" node="HCl_syringe" event="DONE"/>
+                        </khip:eventListenersLogicalAnd>
+                    </khip:trigger>
                     <khip:errors>
                         <khip:error name="setup_error" node="HCl_syringe" event="UNEXPECTED_STOP"/>
                     </khip:errors>
@@ -56,9 +72,12 @@
                     </khic:attributes>
                 </khip:executeCommand>
                 <khip:triggers>
-                    <khip:eventListeners>
-                        <khip:eventListener name="setup_naoh_ok" node="NaOH_syringe" event="DONE">react</khip:eventListener>
-                    </khip:eventListeners>
+                    <khip:trigger>
+                        <khip:nextOperation>react</khip:nextOperation>
+                        <khip:eventListenersLogicalAnd>
+                            <khip:eventListener name="setup_naoh_ok" node="NaOH_syringe" event="DONE"/>
+                        </khip:eventListenersLogicalAnd>
+                    </khip:trigger>
                 </khip:triggers>
             </khip:operation>
             <khip:operation name="react">
