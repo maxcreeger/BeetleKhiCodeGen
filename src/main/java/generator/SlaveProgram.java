@@ -263,8 +263,8 @@ public class SlaveProgram {
                             program.append("\n  Wire.begin(")
                                     .append(linkedNode.node.getI2Caddress())
                                     .append("); // Join i2c bus");
-                            program.append("\n  Wire.onRequest(requestedI2cMesssage); // Register 'Master requests a message' event");
-                            program.append("\n  Wire.onReceive(receiveI2cMesssage);   // Register 'Master sends a message' event");
+                            program.append("\n  Wire.onRequest(requestedI2cMessage); // Register 'Master requests a message' event");
+                            program.append("\n  Wire.onReceive(receiveI2cMessage);   // Register 'Master sends a message' event");
                             program.append("\n  Serial.begin(9600);                   // start serial for output");
                             program.append(value);
                             program.append("\n}");
@@ -331,7 +331,7 @@ public class SlaveProgram {
         StringBuilder program = new StringBuilder();
         // Check all commands
         program.append("\n\n// Receive communication from master Node");
-        program.append("\nvoid receiveI2cMesssage(int size) {");
+        program.append("\nvoid receiveI2cMessage(int size) {");
         program.append("\n  char receivedMessage[32];");
         program.append("\n  int i = 0;");
         program.append("\n  while (1 < Wire.available() && i < 32) {        // loop through all but the last");
@@ -356,42 +356,31 @@ public class SlaveProgram {
             nbcar++;
             program.append(") {");
             program.append("\n    // Parse attribute values");
-            if (cmd.getAttributes() != null && cmd.getAttributes()
-                    .getAttribute() != null) {
+            if (cmd.getAttributes() != null && cmd.getAttributes().getAttribute() != null) {
                 for (Attribute attr : cmd.getAttributes()
                         .getAttribute()) {
                     String attrVarName = attr.getValue();
-                    program.append("\n    // Parse ")
-                            .append(attr.getName());
-                    program.append("\n    ")
-                            .append(attrVarName)
-                            .append(" = ")
-                            .append(ProcessOverview.defaultValueForType(attr.getType()))
-                            .append(";");
+                    program.append("\n    // Parse ").append(attr.getName());
+                    program.append("\n    ").append(attrVarName).append(" = ").append(ProcessOverview.defaultValueForType(attr.getType())).append(";");
                     switch (attr.getType()) {
                         case "int":
                         case "long":
                             // Parse int
-                            program.append("\n    for(int i = 0; i < ")
-                                    .append(attr.getLength())
-                                    .append("; i++) {");
-                            program.append("\n      ")
-                                    .append(attrVarName)
-                                    .append(" = ")
-                                    .append(attrVarName)
-                                    .append(" * 10 + ")
-                                    .append("receivedMessage[")
-                                    .append(nbcar)
-                                    .append(" + i] - '0';");
+                            program.append("\n    for(int i = 0; i < ").append(attr.getLength()).append("; i++) {");
+                            program.append("\n      ").append(attrVarName).append(" = ").append(attrVarName).append(" * 10 + ").append("receivedMessage[").append(nbcar).append(" + i] - '0';");
                             program.append("\n    }");
                             nbcar += Integer.parseInt(attr.getLength()) + 2;
                             break;
+                        case "float":
+                        case "double":
+                            // Parse int
+                            program.append("\n    for(int i = 0; i < ").append(attr.getLength()).append("; i++) {");
+                            program.append("\n      ").append(attrVarName).append(" = ").append(attrVarName).append(" * 10 + ").append("receivedMessage[").append(nbcar).append(" + i] - '0';");
+                            program.append("\n    }");
+                            nbcar += Double.parseDouble(attr.getLength()) + 2;
+                            break;
                         case "boolean":
-                            program.append("\n    ")
-                                    .append(attrVarName)
-                                    .append(" = receivedMessage[")
-                                    .append(nbcar + 1)
-                                    .append("] == 't';");
+                            program.append("\n    ").append(attrVarName).append(" = receivedMessage[").append(nbcar + 1).append("] == 't';");
                             nbcar += 6; // 'true' or 'false'+ space
                             break;
                         default:
@@ -411,7 +400,7 @@ public class SlaveProgram {
     private StringBuilder noCommunication() {
         StringBuilder program = new StringBuilder();
         program.append("\n\n// No communication");
-        program.append("\nvoid receiveI2cMesssage(int size) {");
+        program.append("\nvoid receiveI2cMessage(int size) {");
         program.append("\n  // No communication defined");
         program.append("\n}");
         return program;
@@ -419,7 +408,7 @@ public class SlaveProgram {
 
     private StringBuilder constructRespondI2cRequestMethod() {
         StringBuilder program = new StringBuilder();
-        program.append("\n\nvoid requestedI2cMesssage() {");
+        program.append("\n\nvoid requestedI2cMessage() {");
         program.append("\n  int16_t num = 1234;  // number to send");
         program.append("\n  byte myArray[2];");
         program.append("\n  putInt(myArray, num);");

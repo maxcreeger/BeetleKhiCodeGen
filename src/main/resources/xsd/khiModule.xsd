@@ -1,5 +1,5 @@
-<xs:schema attributeFormDefault="unqualified"
-           elementFormDefault="qualified"
+<xs:schema
+        elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:khim="http://www.example.com/beetlekhi/module"
            xmlns:khic="http://www.example.com/beetlekhi/command"
@@ -37,7 +37,7 @@
                 <xs:element ref="khic:attributes" minOccurs="0"/>
                 <xs:element ref="khim:variableReference"/>
             </xs:choice>
-            <xs:attribute type="xs:string" name="name" use="optional"/>
+            <xs:attribute type="xs:string" name="name"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="variableReference">
@@ -60,7 +60,7 @@
         <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="name"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
@@ -76,7 +76,7 @@
         <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="name" use="required"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
@@ -94,7 +94,7 @@
             <xs:simpleContent>
                 <xs:extension base="xs:string">
                     <xs:attribute type="xs:string" name="name"/>
-                    <xs:attribute type="xs:string" name="type" use="optional"/>
+                    <xs:attribute type="xs:string" name="type"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
@@ -110,7 +110,7 @@
         <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="name"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>
@@ -149,8 +149,8 @@
         <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="name" use="optional"/>
-                    <xs:attribute type="xs:string" name="direction" use="optional"/>
+                    <xs:attribute type="xs:string" name="name"/>
+                    <xs:attribute type="xs:string" name="direction"/>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>

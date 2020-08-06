@@ -4,27 +4,18 @@
 			xmlns:khic="http://www.example.com/beetlekhi/command"
 			name="mReactorByBernard">
 	<code>
-		<loop>
-<![CDATA[
-  pollTemperature();
-
-]]>
-		</loop>
+		<loop><![CDATA[
+  pollTemperature();]]></loop>
 		<methods>
-			<method>
-<![CDATA[
-void pollTemperature(){
-  mReactorByBernard_TEMPERATURE_VALUE = 22; // Do actual stuff here!
-}
-]]>
-			</method>
+			<method name="pollTemperature"><![CDATA[
+  mReactorByBernard_TEMPERATURE_VALUE = 22; // Do actual stuff here!]]></method>
 		</methods>
 	</code>
 	<communication>
 		<commands>
 			<khic:command name="setTemperature" keyword="SET_TEMP">
 				<khic:attributes>
-					<khic:attribute name="temp" type="double" order="1">targetTemperature</khic:attribute>
+					<khic:attribute name="temp" type="double" order="1" length="1">targetTemperature</khic:attribute>
 				</khic:attributes>
 				<khic:timeout>10000</khic:timeout>
 				<khic:response>

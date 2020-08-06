@@ -9,7 +9,6 @@ import test.beetlekhi.module.*;
 import test.beetlekhi.process.Error;
 import test.beetlekhi.process.*;
 
-import javax.xml.bind.JAXBException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -23,8 +22,8 @@ public class ProcessLinker {
     private final TriggerLinker triggerLinker;
     private final CommandLinker commandLinker;
 
-    public ProcessLinker(List<Khimodule> moduleRepository, Khiprocess process) throws JAXBException, MissingKhiModuleException, InvalidKhiProcessException,
-            InvalidKhiModuleException, UnavailableCommandException, InvalidStateException {
+    public ProcessLinker(List<Khimodule> moduleRepository, Khiprocess process) throws MissingKhiModuleException, InvalidKhiProcessException,
+            InvalidCommandAttributeException, InvalidStateException, UnavailableCommandException {
         this.process = process;
         this.moduleLinker = new ModuleLinker(moduleRepository);
         this.nodeLinker = new NodeLinker(process);
@@ -96,7 +95,6 @@ public class ProcessLinker {
         Map<String, LinkedNode> linkNodesToModules() throws MissingKhiModuleException {
             // Link nodes to their modules
             System.out.println("[LINKING] " + nodeLookup.size() + " Nodes to " + moduleLinker.getModuleLookup().size() + " Modules:");
-            Map<Node, Khimodule> node2moduleLookup = new HashMap<>();
             Map<String, LinkedNode> linkedNodeLookup = new HashMap<>();
             for (Entry<String, Node> nodeEntry : nodeLookup.entrySet()) {
                 Node node = nodeEntry.getValue();
@@ -297,13 +295,12 @@ public class ProcessLinker {
 
     class CommandLinker {
 
-        public CommandLinker() throws InvalidKhiProcessException, UnavailableCommandException {
+        public CommandLinker() throws InvalidKhiProcessException, InvalidCommandAttributeException, UnavailableCommandException {
             prepareCommands();
         }
 
-        void prepareCommands() throws InvalidKhiProcessException, UnavailableCommandException {
+        void prepareCommands() throws InvalidKhiProcessException, InvalidCommandAttributeException, UnavailableCommandException {
             // Browse operations
-            Map<String, LinkedCommand> linkedCommandLookup = new HashMap<>();
             System.out.println("[LINKING] Process ExecuteCommand to Node Command:");
             for (LinkedOperation linkedOperation : operationLinker.getLinkedOperationLookup().values()) {
                 // Link khiModule.Command to khiProcess.ExecuteCommand
@@ -318,32 +315,36 @@ public class ProcessLinker {
                     System.out.println("  |  + Command '" + exec.getName() + "' can be sent sent to node '" + exec.getNode() + "'");
 
                     // Seek for a corresponding command accepted by the module
-                    LinkedCommand linkedCommand = findCommand(linkedOperation, exec, linkedNode);
-                    linkedCommandLookup.put(operation.getName() + "_" + exec.getName(), linkedCommand);
-
-                    Command moduleCommand = null;
-                    Optional<Communication> communication = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
-                    if (communication.isPresent()) {
-                        Optional<Commands> commands = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
-                        if (commands.isPresent()) {
-                            for (Command availableCommand : commands.get().getCommand()) {
-                                if (exec.getName()
-                                        .equals(availableCommand.getName())) {
-                                    moduleCommand = availableCommand;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (moduleCommand == null) {
-                        throw new UnavailableCommandException("Operation '" + operation.getName() + "' requests command '" + exec.getName()
-                                + "', but it is not provided by node '" + linkedNode.node.getName() + "' defined by module '" + linkedNode.getKhiModule()
-                                .getName() + "'");
-                    }
-                    LinkedAttributes commandAttributes = new LinkedAttributes(linkedCommand, moduleCommand, exec);
-                    // TODO do something with linked commandAttributes, maybe add it to linked command?
+                    Command moduleCommand = findCommand(exec, linkedNode.getKhiModule());
+                    LinkedCommand linkedCommand = new LinkedCommand(linkedOperation, exec, moduleCommand, linkedNode);
+                    linkedNode.add(linkedCommand);
                 }
             }
+        }
+
+        /**
+         * Finds a {@link Command} in a {@link Khimodule} which answers to an {@link ExecuteCommand} order sent by a {@link Khiprocess}
+         *
+         * @param exec   The {@link ExecuteCommand} specification that needs to be matched by an implementation in the module
+         * @param module a {@link Khimodule} in which to search for the {@link Command}
+         * @return a {@link Command} executed by the {@link ExecuteCommand}
+         * @throws InvalidKhiProcessException if no matching {@link Command} can be found
+         */
+        private Command findCommand(ExecuteCommand exec, Khimodule module) throws
+                InvalidKhiProcessException {
+            Optional<Communication> communication = ElementFilter.getClass(module.getCodeOrCommunicationOrHardware(), Communication.class);
+            if (communication.isPresent()) {
+                Optional<Commands> commands = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
+                if (commands.isPresent()) {
+                    for (Command command : commands.get().getCommand()) {
+                        if (exec.getName().equals(command.getName())) {
+                            return command;
+                        }
+                    }
+                }
+            }
+            throw new InvalidKhiProcessException("Process '" + process.getName() + "' attempts to execute a command called'" + exec.getName() + " on node '"
+                    + exec.getNode() + "' implemented by module '" + module.getName() + "', but this module defines no such command");
         }
     }
 
@@ -361,39 +362,6 @@ public class ProcessLinker {
 
     public OperationLinker getOperationLinker() {
         return operationLinker;
-    }
-
-    /**
-     * Finds a {@link Command} in a {@link Khimodule} which answers to an {@link ExecuteCommand} order sent by a {@link Khiprocess}
-     *
-     * @param linkedOperation the {@link LinkedOperation} context
-     * @param exec            The {@link ExecuteCommand} specification that needs to be matched by an implementation in the module
-     * @param linkedNode      a {@link LinkedNode} in which to search for the {@link Command}
-     * @return a {@link LinkedCommand} representing the {@link ExecuteCommand} bound to aa {@link Command}
-     * @throws InvalidKhiProcessException if no matching {@link Command} can be found
-     */
-    private LinkedCommand findCommand(LinkedOperation linkedOperation, ExecuteCommand exec, LinkedNode linkedNode) throws
-            InvalidKhiProcessException {
-        LinkedCommand linkedCommand = null;
-        Optional<Communication> communication = ElementFilter.getClass(linkedNode.getKhiModule().getCodeOrCommunicationOrHardware(), Communication.class);
-        if (communication.isPresent()) {
-            Optional<Commands> commands = ElementFilter.getClass(communication.get().getCommandsOrSensorsOrEvents(), Commands.class);
-            if (commands.isPresent()) {
-                for (Command command : commands.get().getCommand()) {
-                    if (exec.getName().equals(command.getName())) {
-                        linkedCommand = new LinkedCommand(linkedOperation, exec, command, linkedNode);
-                        linkedNode.add(linkedCommand);
-                        break;
-                    }
-                }
-            }
-        }
-        if (linkedCommand == null) {
-            throw new InvalidKhiProcessException("Process '" + process.getName() + "' attempts to execute a command called'" + exec.getName() + " on node '"
-                    + exec.getNode() + "' implemented by module '" + linkedNode.getKhiModule()
-                    .getName() + "', but this module defines no such command");
-        }
-        return linkedCommand;
     }
 
     public ProcessOverview assemble() {

@@ -9,5 +9,3 @@ test-output/
 node_modules/**
 .orig
 /.idea/
-/.settings/
-/bin/

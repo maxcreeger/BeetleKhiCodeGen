@@ -102,12 +102,12 @@ public class MasterProgram {
     private StringBuilder constructTriggersReceived() {
         StringBuilder triggersReceived = new StringBuilder();
         triggersReceived.append("\n\n// Events Received:");
-        Set<String> eventsEncountered = new HashSet<>();
-        Set<String> errorsEncountered = new HashSet<>();
         Map<String, Set<String>> nodeEvents = new HashMap<>();
+        // init the mapping node to Event
         for (LinkedNode node : overview.getLinkedNodes()) {
             nodeEvents.put(node.getName(), new HashSet<>());
         }
+        // Populate the Mapping node to Event
         for (LinkedOperation linkedOperation : overview.getLinkedOperations()) {
             for (LinkedTrigger linkedTrigger : linkedOperation.getLinkedTriggers()) {
                 for (LinkedTrigger.LinkedEventListener linkedEventListener : linkedTrigger.getAllInternalEvents()) {
@@ -120,8 +120,9 @@ public class MasterProgram {
                 nodeEvents.get(nodeName).add(event);
             }
         }
+        // Use the Mapping node to Event
         for (Map.Entry<String, Set<String>> entry : nodeEvents.entrySet()) {
-            triggersReceived.append("\n// + Events from node '").append(entry.getKey() + "'");
+            triggersReceived.append("\n// + Events from node '").append(entry.getKey()).append("'");
             if (entry.getValue().isEmpty()) {
                 triggersReceived.append("\n//   -> No Events for this Node");
             } else {
@@ -233,7 +234,7 @@ public class MasterProgram {
 
     static StringBuilder constructExecuteCommand(LinkedCommand command) {
         StringBuilder program = new StringBuilder();
-        String callParameters = command.getAttributes().constructMethodCall();
+        String callParameters = command.constructMethodCall();
         callParameters = command.getTarget().getName() + "_Address" + (callParameters.isEmpty() ? "" : ", " + callParameters);
         program.append("\n    execute_").append(command.getName()).append("(").append(callParameters).append(");");
         return program;

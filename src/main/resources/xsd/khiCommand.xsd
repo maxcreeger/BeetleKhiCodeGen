@@ -3,11 +3,12 @@
            xmlns:khic="http://www.example.com/beetlekhi/command"
            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
            jaxb:version="2.0"
-           targetNamespace="http://www.example.com/beetlekhi/command">
+           targetNamespace="http://www.example.com/beetlekhi/command"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <xs:annotation>
         <xs:appinfo>
-            <jaxb:schemaBindings >
+            <jaxb:schemaBindings>
                 <jaxb:package name="test.beetlekhi.command"/>
             </jaxb:schemaBindings>
         </xs:appinfo>
@@ -24,8 +25,8 @@
             </xs:sequence>
         </xs:complexType>
         <xs:unique name="UniqueAttributeOrder">
-            <xs:selector xpath="khic:attribute" />
-            <xs:field xpath="@order" />
+            <xs:selector xpath="khic:attribute"/>
+            <xs:field xpath="@order"/>
         </xs:unique>
     </xs:element>
     <xs:element name="attribute">

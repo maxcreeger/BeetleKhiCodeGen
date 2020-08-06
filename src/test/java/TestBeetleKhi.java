@@ -1,7 +1,9 @@
 
+import exceptions.InvalidCommandAttributeException;
+import exceptions.UnavailableCommandException;
 import generator.MasterProgram;
-import generator.SlaveProgram;
 import generator.ProcessOverview;
+import generator.SlaveProgram;
 import gui.ModuleMonitor;
 import linker.LinkedNode;
 import org.junit.Test;
@@ -20,14 +22,13 @@ import java.util.Map.Entry;
 
 public class TestBeetleKhi {
 
-    public static void main(String[] arg) throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidKhiModuleException,
-            exceptions.UnavailableCommandException, exceptions.InvalidStateException, IOException {
+    public static void main(String[] arg) throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidStateException, IOException, InvalidCommandAttributeException, UnavailableCommandException {
         new TestBeetleKhi().main();
     }
 
     @Test
-    public void main() throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidKhiModuleException,
-            exceptions.UnavailableCommandException, exceptions.InvalidStateException, IOException {
+    public void main() throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException,
+            exceptions.InvalidStateException, IOException, InvalidCommandAttributeException, UnavailableCommandException {
         // Read Modules
         File syringe = new File("./src/test/resources/xml/mSyringeByAlexandre.xml");
         File reactor = new File("./src/test/resources/xml/mReactorByBernard.xml");
@@ -44,9 +45,9 @@ public class TestBeetleKhi {
         System.out.println();
         System.out.println();
         System.out.println("Generated Programs:");
-        for (Entry<LinkedNode, SlaveProgram> prog : programs.entrySet()) {
-            String nodeName = prog.getKey().node.getName();
-            SlaveProgram slaveSourceCode = prog.getValue();
+        for (Entry<LinkedNode, SlaveProgram> program : programs.entrySet()) {
+            String nodeName = program.getKey().node.getName();
+            SlaveProgram slaveSourceCode = program.getValue();
             File file = new File("./target/generated-test-sources/arduino-programs/" + nodeName + ".c");
             slaveSourceCode.saveToFile(file);
             System.out.println(" + " + nodeName + ".c program generated");

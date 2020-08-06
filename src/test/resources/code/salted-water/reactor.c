@@ -1,5 +1,7 @@
+// Includes
 #include <EEPROM.h>
 #include <Wire.h>
+#include <stdio.h>
 
 // Event Variables
 
@@ -13,6 +15,10 @@ void setup() {
     getAddress();
     Wire.begin(I2CAddress);
     wireInit();
+}
+
+void loop() {
+  delay(100);
 }
 
 void getAddress() {

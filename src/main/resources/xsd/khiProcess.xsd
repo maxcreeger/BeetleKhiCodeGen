@@ -1,5 +1,5 @@
-<xs:schema attributeFormDefault="unqualified"
-           elementFormDefault="qualified"
+<xs:schema
+        elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:khip="http://www.example.com/beetlekhi/process"
            xmlns:khic="http://www.example.com/beetlekhi/command"
@@ -25,7 +25,7 @@
                 <xs:element ref="khip:module"/>
                 <xs:element ref="khip:I2Caddress"/>
             </xs:sequence>
-            <xs:attribute type="xs:string" name="name" use="optional"/>
+            <xs:attribute type="xs:string" name="name"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="errors">
@@ -39,7 +39,7 @@
         <xs:complexType>
             <xs:simpleContent>
                 <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="name" use="optional"/>
+                    <xs:attribute type="xs:string" name="name"/>
                     <xs:attribute type="xs:string" name="node"/>
                     <xs:attribute type="xs:string" name="event"/>
                 </xs:extension>
@@ -51,7 +51,7 @@
             <xs:sequence>
                 <xs:element ref="khic:attributes" minOccurs="0"/>
             </xs:sequence>
-            <xs:attribute type="xs:string" name="name" use="optional"/>
+            <xs:attribute type="xs:string" name="name"/>
             <xs:attribute type="xs:string" name="node"/>
         </xs:complexType>
     </xs:element>
@@ -66,8 +66,8 @@
     <xs:element name="trigger">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="khip:nextOperation" minOccurs="1" maxOccurs="1"/>
-                <xs:element ref="khip:eventListenersLogicalAnd" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="khip:nextOperation"/>
+                <xs:element ref="khip:eventListenersLogicalAnd" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute type="xs:string" name="name"/>
         </xs:complexType>
@@ -130,7 +130,7 @@
                 <xs:element ref="khip:executeCommand" maxOccurs="unbounded" minOccurs="0"/>
                 <xs:element ref="khip:triggers" minOccurs="0"/>
             </xs:sequence>
-            <xs:attribute type="xs:string" name="name" use="optional"/>
+            <xs:attribute type="xs:string" name="name"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="initial" type="xs:string"/>

@@ -4,5 +4,5 @@ This should be performed when the xml change format (for example, their xsd have
 
 Simply execute genModule and genProcess .bat files in sequence. 
 Make sure they point to the correct folders on your machine (editable like any text file).
-Outcome: the result folder will hold some gnerated code.
+Outcome: the result folder will hold some generated code.
 Copy that code into the src folder.

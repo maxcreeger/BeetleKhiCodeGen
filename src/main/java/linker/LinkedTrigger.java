@@ -159,7 +159,7 @@ public class LinkedTrigger {
             }
             for (Timer timer : timers) {
                 StringBuilder eventBool = new StringBuilder("millis() > stateStartTime[step_").append(operationName).append("] + ").append(timer.getValue());
-                content.append(separator).append(eventBool); // TODO wait timer: C code?
+                content.append(separator).append(eventBool);
                 separator = " && ";
             }
             return content.append(")");
