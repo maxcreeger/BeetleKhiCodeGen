@@ -1,6 +1,5 @@
 package linker;
 
-import parsing.ProcessLinker;
 import test.beetlekhi.module.Event;
 import test.beetlekhi.process.Error;
 

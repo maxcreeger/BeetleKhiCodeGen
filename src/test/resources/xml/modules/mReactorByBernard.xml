@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<khimodule
+			xmlns="http://www.example.com/beetlekhi/module"
+			xmlns:khic="http://www.example.com/beetlekhi/command"
+			name="mReactorByBernard">
+	<code>
+		<loop><![CDATA[
+  pollTemperature();]]></loop>
+		<methods>
+			<method name="pollTemperature"><![CDATA[
+  mReactorByBernard_TEMPERATURE_VALUE = 22; // Do actual stuff here!]]></method>
+		</methods>
+	</code>
+	<communication>
+		<commands>
+			<khic:command name="setTemperature" keyword="SET_TEMP">
+				<khic:attributes>
+					<khic:attribute name="temp" type="double" order="1" length="1">targetTemperature</khic:attribute>
+				</khic:attributes>
+				<khic:timeout>10000</khic:timeout>
+				<khic:response>
+				    <khic:success>OK</khic:success>
+				    <khic:failure>NOK</khic:failure>
+				</khic:response>
+			</khic:command>
+		</commands>
+		<sensors>
+			<sensor name="TEMPERATURE">
+				<khic:attributes>
+					<khic:attribute name="Temperature" type="int" order="1"/>
+				</khic:attributes>
+			</sensor>
+		</sensors>
+	</communication>
+</khimodule>

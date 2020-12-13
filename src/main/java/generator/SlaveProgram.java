@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-public class SlaveProgram {
+public class SlaveProgram implements ICodeGenerator{
 
     final LinkedNode linkedNode;
 
@@ -28,7 +28,7 @@ public class SlaveProgram {
      * uint32_t    4 bytes               0 to 4,294,967,295      unsigned long
      *
      */
-    public static enum Number {
+    public enum Number {
         INT(2, -32_768, 32_767, "integer"), INT8(1, -128, 32_767, "signed char"), UINT8(1, 0, 32_767, "unsigned char"), INT16(2, -32_768, 32_767, "integer"), UINT16(
                 2, 0, 32_767, "unsigned integer"), INT32(4, -2_147_483_648, 2_147_483_647, "long"), UINT32(4, 0, 4_294_967_295L, "unsigned long");
 
@@ -49,6 +49,7 @@ public class SlaveProgram {
         this.linkedNode = linkedNode;
     }
 
+    @Override
     public String constructProgramCode() {
         StringBuilder program = new StringBuilder("//" + linkedNode.getKhiModule()
                 .getName());

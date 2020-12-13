@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd">
+<preferences EXTERNAL_XML_VERSION="1.0">
+  <root type="user">
+    <map/>
+    <node name="org">
+      <map/>
+      <node name="marmotte">
+        <map/>
+        <node name="BeetleKhi">
+          <map>
+            <entry key="key" value="Beetle Khi"/>
+            <entry key="value" value=""/>
+            <entry key="editable" value="false"/>
+          </map>
+          <node name="repositories">
+            <map>
+              <entry key="key" value="Repositories"/>
+              <entry key="value" value=""/>
+            </map>
+            <node name="Modules">
+              <map>
+                <entry key="key" value="Module Repositories"/>
+                <entry key="value" value=""/>
+                <entry key="editable" value="false"/>
+              </map>
+              <node name="Local">
+                <map>
+                  <entry key="key" value="Local Modules Repository"/>
+                  <entry key="value" value="E:\Docs\IdeaProjects\BeetleKhiCodeGen\src\test\resources\xml\modules"/>
+                  <entry key="editable" value="true"/>
+                </map>
+              </node>
+            </node>
+            <node name="Processes">
+              <map>
+                <entry key="key" value="Processes Repository"/>
+                <entry key="value" value=""/>
+                <entry key="editable" value="false"/>
+              </map>
+              <node name="Local">
+                <map>
+                  <entry key="key" value="Local Processes Repository"/>
+                  <entry key="value" value="E:\Docs\IdeaProjects\BeetleKhiCodeGen\src\test\resources\xml\processes"/>
+                  <entry key="editable" value="true"/>
+                </map>
+              </node>
+            </node>
+          </node>
+          <node name="test">
+            <map>
+              <entry key="key" value="testKey"/>
+              <entry key="value" value="testVa"/>
+              <entry key="editable" value="false"/>
+            </map>
+            <node name="properties">
+              <map>
+                <entry key="key" value="someKey"/>
+                <entry key="value" value="someValue"/>
+                <entry key="editable" value="true"/>
+              </map>
+			  <node name="subproperties">
+			    <map>
+			  	<entry key="key" value="someKey"/>
+			  	<entry key="value" value="someValue"/>
+                <entry key="editable" value="true"/>
+			    </map>
+			  </node>
+            </node>
+          </node>
+        </node>
+      </node>
+    </node>
+  </root>
+</preferences>

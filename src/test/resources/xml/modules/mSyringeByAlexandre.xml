@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<khimodule
+		xmlns="http://www.example.com/beetlekhi/module"
+		xmlns:khic="http://www.example.com/beetlekhi/command"
+		name="mSyringeByAlexandre">
+	<code>
+		<libraries>
+			<library name="stepperLib">Stepper.h</library>
+		</libraries>
+		<stateVariables>
+			<stateVariable name="bLowerLimit" type="boolean"/>
+			<stateVariable name="bUpperLimit" type="boolean"/>
+			<stateVariable name="iCurrentVolume" type="int"/>
+		</stateVariables>
+		<setup><![CDATA[
+	//Set interruptions
+
+	pinMode(iLowerLimitSwitch_pin, INPUT);//Lower Limit Detection
+	attachInterrupt(digitalPinToInterrupt(iLowerLimitSwitch_pin), LowerLimitSwitchISR, CHANGE);
+
+	pinMode(iUpperLimitSwitch_pin, INPUT);//Upper Limit Detection
+	attachInterrupt(digitalPinToInterrupt(iUpperLimitSwitch_pin), UpperLimitSwitchISR, CHANGE);
+]]>
+		</setup>
+		<loop><![CDATA[
+	double vitT = (temp - temp_old) /0.01;
+	double cmd = P*(temp - target) + D * vitT;
+	sendCurrent(cmd);
+]]>
+		</loop>
+		<internal><![CDATA[
+//Interrupt Service Routine
+void LowerLimitSwitchISR() {
+	bLowerLimit = digitalRead(iLowerLimitSwitch_pin);
+}
+
+//Interrupt Service Routine
+void UpperLimitSwitchISR() {
+	bUpperLimit =  digitalRead(iUpperLimitSwitch_pin);
+}
+]]>
+		</internal>
+		<methods>
+			<method name = "sendCurrent"><![CDATA[
+	printf("hello world?");
+]]>
+			</method>
+			<method name = "inject"><![CDATA[
+	printf("hello world !!!!");
+]]>
+			</method>
+		</methods>
+	</code>
+	<communication>
+		<commands>
+			<khic:command name="inject" keyword="PUMP">
+				<khic:attributes>
+					<khic:attribute name="volume"   type="long" signed="true"  length="9" order="1">iTargetVolume</khic:attribute>
+					<khic:attribute name="flowRate" type="int"  signed="false" length="6" order="2">iFlowRate</khic:attribute>
+				</khic:attributes>
+				<khic:timeout>10000</khic:timeout>
+			</khic:command>
+			<khic:command name="MOVE_TO_LOWER_STOP" keyword="MOVE_TO_LOWER_STOP"/>
+			<khic:command name="MOVE_TO_UPPER_STOP" keyword="MOVE_TO_UPPER_STOP"/>
+		</commands>
+		<sensors>
+			<sensor name="VOLUME">
+				<khic:attributes>
+					<khic:attribute name="Volume" type="double" order="1"/>
+				</khic:attributes>
+				<variableReference name="iCurrentVolume"/>
+			</sensor>
+			<sensor name="UPPER_STOP">
+				<khic:attributes>
+					<khic:attribute name="Upper Stop" type="boolean" order="1"/>
+				</khic:attributes>
+				<variableReference name="bUpperLimit"/>
+			</sensor>
+			<sensor name="LOWER_STOP">
+				<khic:attributes>
+					<khic:attribute name="Lower Stop" type="boolean" order="1"/>
+				</khic:attributes>
+				<variableReference name="bLowerLimit"/>
+			</sensor>
+		</sensors>
+		<events>
+			<event name="LOWER_STOP"/>
+			<event name="UPPER_STOP"/>
+			<event name="DONE"/>
+			<event name="UNEXPECTED_STOP"/>
+		</events>
+	</communication>
+	<hardware>
+		<fluidConnections>
+			<fluidConnection direction="BOTH" name="fluidExit"/>
+		</fluidConnections>
+	</hardware>
+</khimodule>

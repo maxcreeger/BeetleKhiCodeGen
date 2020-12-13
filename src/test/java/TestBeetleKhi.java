@@ -4,11 +4,12 @@ import exceptions.UnavailableCommandException;
 import generator.MasterProgram;
 import generator.ProcessOverview;
 import generator.SlaveProgram;
+import gui.BeetleKhiMainGui;
 import gui.ModuleMonitor;
 import linker.LinkedNode;
 import org.junit.Test;
 import parsing.Parser;
-import parsing.ProcessLinker;
+import linker.ProcessLinker;
 import test.beetlekhi.module.Khimodule;
 import test.beetlekhi.process.Khiprocess;
 
@@ -16,18 +17,27 @@ import javax.swing.*;
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class TestBeetleKhi {
 
     public static void main(String[] arg) throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException, exceptions.InvalidStateException, IOException, InvalidCommandAttributeException, UnavailableCommandException {
-        new TestBeetleKhi().main();
+        new TestBeetleKhi().moduleMonitorDisplay();
     }
 
     @Test
-    public void main() throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException,
+    public void mainGuiDisplay() throws InterruptedException {
+        new BeetleKhiMainGui(Paths.get(""));
+        Thread.sleep(1000000);
+    }
+
+    @Test
+    public void moduleMonitorDisplay() throws JAXBException, exceptions.MissingKhiModuleException, exceptions.InvalidKhiProcessException,
             exceptions.InvalidStateException, IOException, InvalidCommandAttributeException, UnavailableCommandException {
         // Read Modules
         File syringe = new File("./src/test/resources/xml/mSyringeByAlexandre.xml");
@@ -60,20 +70,30 @@ public class TestBeetleKhi {
         // TODO add C library loading
         // TODO read sensors tag
         // TODO link sensor variableReference to code/variables
-        JFrame frame = newFrame(saltedWater.getName());
-        for (LinkedNode node : programs.keySet()) {
-            frame.add(new ModuleMonitor(node).getPanel());
-        }
-        frame.pack();
-
+        List<JComponent> panels = programs.keySet()
+                .stream()
+                .map(
+                linkedNode -> new ModuleMonitor(linkedNode).getPanel()
+        ).collect(Collectors.toList());
+        newFrame(saltedWater.getName(), panels);
         process.begin("COM1");
+    }
+
+    public JFrame newFrame(String title, List<JComponent> components) {
+        JFrame frame = newFrame(title);
+        components.forEach(frame::add);
+        frame.pack();
+        return frame;
+    }
+
+    public JFrame newFrame(String title, JComponent... components) {
+        return newFrame(title, Arrays.asList(components));
     }
 
     public JFrame newFrame(String title) {
         JFrame frame = new JFrame(title);
         frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.PAGE_AXIS));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
         frame.setVisible(true);
         return frame;
 

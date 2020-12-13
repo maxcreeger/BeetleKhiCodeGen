@@ -1,9 +1,8 @@
-package parsing;
+package linker;
 
 import beetlkhi.utils.xsd.ElementFilter;
 import exceptions.*;
 import generator.ProcessOverview;
-import linker.*;
 import test.beetlekhi.command.Command;
 import test.beetlekhi.module.*;
 import test.beetlekhi.process.Error;

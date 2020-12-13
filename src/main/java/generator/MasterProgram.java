@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MasterProgram {
+public class MasterProgram implements ICodeGenerator{
 
     final ProcessOverview overview;
 
@@ -17,6 +17,7 @@ public class MasterProgram {
         this.overview = overview;
     }
 
+    @Override
     public String constructProgramCode() {
         StringBuilder program = new StringBuilder(4000);
         program.append("// ").append(overview.getProcess().getName());

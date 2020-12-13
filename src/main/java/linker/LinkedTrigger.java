@@ -2,7 +2,6 @@ package linker;
 
 import beetlkhi.utils.xsd.ElementFilter;
 import exceptions.InvalidKhiProcessException;
-import parsing.ProcessLinker;
 import test.beetlekhi.module.Communication;
 import test.beetlekhi.module.Event;
 import test.beetlekhi.module.Events;
