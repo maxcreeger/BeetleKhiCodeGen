@@ -4,34 +4,27 @@ import exceptions.*;
 import generator.ProcessOverview;
 import linker.LinkedNode;
 import linker.ProcessLinker;
-import parsing.Parser;
 import test.beetlekhi.module.Khimodule;
 import test.beetlekhi.process.Khiprocess;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class BeetleKhiMainGui extends JFrame {
 
-    private final List<Khimodule> modulesRepository;
-    private final List<Khiprocess> processRepository;
+    private final ProjectManager projectManager;
 
     public BeetleKhiMainGui(Path khiHome) {
         super("Beetle Khi");
         // Prepare Environment
-        ProjectManager projectManager = new ProjectManager(khiHome);
+        projectManager = new ProjectManager(khiHome);
         this.setPreferredSize(new Dimension(800, 600));
-        this.modulesRepository = scanModules(projectManager);
-        this.processRepository = scanProcesses(projectManager);
 
         // JMenu ------------------------------------------
         // Project management
@@ -70,19 +63,25 @@ public class BeetleKhiMainGui extends JFrame {
 
 
         // Now Main Tabs ------------------------------------------
-        JTabbedPane tabbedPane = new JTabbedPane();
-
-        JComponent panel1 = new ModulesRepositoryPanel(projectManager);
-        tabbedPane.addTab("Modules", null, panel1, "Manage your Modules");
-
-        JComponent panel2 = new ProcessRepositoryPanel(projectManager); // TODO
-        tabbedPane.addTab("Processes", null, panel2, "Manage your Processes");
-
-        JComponent panel3 = new JPanel(); // TODO
-        tabbedPane.addTab("Experiment", null, panel3, "Design an Experiment");
-        panel3.setPreferredSize(new Dimension(410, 50));
-
-        this.add(tabbedPane);
+        JComponent centralPanel = new JPanel();
+        centralPanel.setMinimumSize(new Dimension(60, 30));
+        centralPanel.setPreferredSize(new Dimension(400, 400));
+        JComponent console = border(new JPanel(), "Console");
+        console.setMinimumSize(new Dimension(60, 30));
+        console.setPreferredSize(new Dimension(400, 200));
+        JComponent projectView = border(new JPanel(), "Project");
+        projectView.setMinimumSize(new Dimension(60, 30));
+        projectView.setPreferredSize(new Dimension(120, 400));
+        JComponent palette = border(new JPanel(), "Palette");
+        palette.setMinimumSize(new Dimension(60, 30));
+        palette.setPreferredSize(new Dimension(120, 400));
+        JSplitPane rightPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, projectView, centralPanel);
+        rightPanel.setOneTouchExpandable(true);
+        JSplitPane top = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, rightPanel, palette);
+        top.setOneTouchExpandable(true);
+        JSplitPane verticalSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, top, console);
+        verticalSplit.setOneTouchExpandable(true);
+        this.add(verticalSplit);
 
         // Make JFrame ------------------------------------------
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
@@ -91,46 +90,12 @@ public class BeetleKhiMainGui extends JFrame {
         pack();
     }
 
-    public static List<Khimodule> scanModules(ProjectManager projectManager) {
-        String modulesRepositoryLocation = projectManager.getUserSetting("repositories", "Modules", "Local").get("value", "????");
-        System.out.println("Scanning for modules at: " + modulesRepositoryLocation);
-        File actual = new File(modulesRepositoryLocation);
-        List<Khimodule> repository = new ArrayList<>();
-        File[] files = actual.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                System.out.println(" + Found Module file: " + f.getName());
-                try {
-                    repository.add(Parser.readModule(f));
-                } catch (JAXBException e) {
-                    throw new RuntimeException("invalid Module file: " + f.getAbsolutePath(), e);
-                }
-            }
-        } else {
-            System.out.println(" + No modules found at: " + modulesRepositoryLocation);
-        }
-        return repository;
-    }
-
-    public static List<Khiprocess> scanProcesses(ProjectManager projectManager) {
-        String processRepositoryLocation = projectManager.getUserSetting("repositories", "Processes", "Local").get("value", "????");
-        System.out.println("Scanning for processes at: " + processRepositoryLocation);
-        File actual = new File(processRepositoryLocation);
-        List<Khiprocess> repository = new ArrayList<>();
-        File[] files = actual.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                System.out.println(" + Found Process file: " + f.getName());
-                try {
-                    repository.add(Parser.readProcess(f));
-                } catch (JAXBException e) {
-                    throw new RuntimeException("invalid Process file: " + f.getAbsolutePath(), e);
-                }
-            }
-        } else {
-            System.out.println(" + No processes found at: " + processRepositoryLocation);
-        }
-        return repository;
+    private static JComponent border(JComponent component, String title) {
+        Border blackLine = BorderFactory.createTitledBorder(title);
+        JPanel borderedPanel = new JPanel();
+        borderedPanel.setBorder(blackLine);
+        borderedPanel.add(component);
+        return borderedPanel;
     }
 
     public void open(String projectName) {
@@ -152,6 +117,7 @@ public class BeetleKhiMainGui extends JFrame {
             moduleRepresentation.values().forEach(this::remove);
             moduleRepresentation.clear();
             // Scan
+            List<Khimodule> modulesRepository = projectManager.getModulesRepository();
             if (modulesRepository.isEmpty()) {
                 JLabel label = new JLabel("No Modules found in " + modulesRepository);
                 moduleRepresentation.put(null, label);
@@ -181,10 +147,11 @@ public class BeetleKhiMainGui extends JFrame {
             processRepresentation.values().forEach(this::remove);
             processRepresentation.clear();
             // Scan
+            List<Khiprocess> processRepository = projectManager.getProcessRepository();
             if (processRepository.isEmpty()) {
-                JLabel label = new JLabel("No Processes found in " + modulesRepository);
+                JLabel label = new JLabel("No Processes found in " + processRepository);
                 processRepresentation.put(null, label);
-                System.out.println(" + No processes found: " + modulesRepository);
+                System.out.println(" + No processes found: " + processRepository);
                 add(label);
             } else {
                 // Add
@@ -204,13 +171,13 @@ public class BeetleKhiMainGui extends JFrame {
         public ProcessPanel(Khiprocess process) {
             this.process = process;
             // Prepare border
-            Border blackLine = BorderFactory.createTitledBorder(process.getName());
-            JPanel borderedPanel = new JPanel();
-            borderedPanel.setBorder(blackLine);
             this.setLayout(new FlowLayout());
+            JComponent borderedPanel = border(new JPanel(), process.getName());
             this.add(borderedPanel);
+
             // Prepare contents
             ProcessLinker linker;
+            List<Khimodule> modulesRepository = projectManager.getModulesRepository();
             try {
                 linker = new ProcessLinker(modulesRepository, process);
             } catch (MissingKhiModuleException | InvalidKhiProcessException | InvalidCommandAttributeException | InvalidStateException | UnavailableCommandException e) {

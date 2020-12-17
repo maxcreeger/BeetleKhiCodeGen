@@ -1,10 +1,18 @@
 package gui;
 
+import parsing.Parser;
+import test.beetlekhi.module.Khimodule;
+import test.beetlekhi.process.Khiprocess;
+
+import javax.xml.bind.JAXBException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
@@ -25,6 +33,11 @@ public class ProjectManager {
 
     public static final TreeTable.PreferenceTreeModel SYSTEM_PREFERENCE_MODEL = new TreeTable.PreferenceTreeModel(SYSTEM_PREFERENCES);
     public static final TreeTable.PreferenceTreeModel USER_PREFERENCE_MODEL = new TreeTable.PreferenceTreeModel(USER_PREFERENCES);
+
+
+    // Session data
+    private final List<Khimodule> modulesRepository;
+    private final List<Khiprocess> processRepository;
 
 
     // /!\ Careful: https://groups.google.com/g/google-web-toolkit/c/LQfsBSwD_ug?pli=1
@@ -69,6 +82,58 @@ public class ProjectManager {
         } catch (IOException | BackingStoreException ioe) {
             throw new RuntimeException("Could not modify files", ioe);
         }
+        this.modulesRepository = scanModules();
+        this.processRepository = scanProcesses();
+    }
+
+    public List<Khimodule> getModulesRepository(){
+        return modulesRepository;
+    }
+
+    public List<Khiprocess> getProcessRepository(){
+        return processRepository;
+    }
+
+    List<Khimodule> scanModules() {
+        String modulesRepositoryLocation = getUserSetting("repositories", "Modules", "Local").get("value", "????");
+        System.out.println("Scanning for modules at: " + modulesRepositoryLocation);
+        File actual = new File(modulesRepositoryLocation);
+        List<Khimodule> repository = new ArrayList<>();
+        File[] files = actual.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                System.out.println(" + Found Module file: " + f.getName());
+                try {
+                    repository.add(Parser.readModule(f));
+                } catch (JAXBException e) {
+                    throw new RuntimeException("invalid Module file: " + f.getAbsolutePath(), e);
+                }
+            }
+        } else {
+            System.out.println(" + No modules found at: " + modulesRepositoryLocation);
+        }
+        return repository;
+    }
+
+    List<Khiprocess> scanProcesses() {
+        String processRepositoryLocation = getUserSetting("repositories", "Processes", "Local").get("value", "????");
+        System.out.println("Scanning for processes at: " + processRepositoryLocation);
+        File actual = new File(processRepositoryLocation);
+        List<Khiprocess> repository = new ArrayList<>();
+        File[] files = actual.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                System.out.println(" + Found Process file: " + f.getName());
+                try {
+                    repository.add(Parser.readProcess(f));
+                } catch (JAXBException e) {
+                    throw new RuntimeException("invalid Process file: " + f.getAbsolutePath(), e);
+                }
+            }
+        } else {
+            System.out.println(" + No processes found at: " + processRepositoryLocation);
+        }
+        return repository;
     }
 
     public static String sanitizeFileOrFolderName(String name) {

@@ -8,4 +8,5 @@ public class Icons {
     static final Icon FILE_VIEW_DIRECTORY_ICON = UIManager.getIcon("FileView.directoryIcon");
     static final Icon FILE_VIEW_ERROR_ICON = UIManager.getIcon("OptionPane.errorIcon");
     static final Icon FILE_VIEW_INFORMATION_ICON = UIManager.getIcon("OptionPane.informationIcon");
+    static final Icon FILE_VIEW_FLOPPY_DRIVE_ICON = UIManager.getIcon("FileView.floppyDriveIcon");
 }
