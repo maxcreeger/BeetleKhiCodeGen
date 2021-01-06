@@ -19,6 +19,8 @@ import java.util.Map;
 public class BeetleKhiMainGui extends JFrame {
 
     private final ProjectManager projectManager;
+    private String projectName = null;
+    private JScrollPane projectPanel = new JScrollPane();
 
     public BeetleKhiMainGui(Path khiHome) {
         super("Beetle Khi");
@@ -62,14 +64,14 @@ public class BeetleKhiMainGui extends JFrame {
         this.setJMenuBar(bar);
 
 
-        // Now Main Tabs ------------------------------------------
+        // Main JPanel ------------------------------------------
         JComponent centralPanel = new JPanel();
         centralPanel.setMinimumSize(new Dimension(60, 30));
         centralPanel.setPreferredSize(new Dimension(400, 400));
         JComponent console = border(new JPanel(), "Console");
         console.setMinimumSize(new Dimension(60, 30));
         console.setPreferredSize(new Dimension(400, 200));
-        JComponent projectView = border(new JPanel(), "Project");
+        JComponent projectView = border(projectPanel, "Project");
         projectView.setMinimumSize(new Dimension(60, 30));
         projectView.setPreferredSize(new Dimension(120, 400));
         JComponent palette = border(new JPanel(), "Palette");
@@ -99,8 +101,12 @@ public class BeetleKhiMainGui extends JFrame {
     }
 
     public void open(String projectName) {
-        System.out.println("You chose to open this Project: " + projectName);
-        //TODO
+        projectPanel.removeAll();
+        Path projectHome = projectManager.getProjectHome(projectName);
+        TreeTable.FileTreeModel model = new TreeTable.FileTreeModel(projectHome.toFile());
+        JComponent jPanel = TreeTable.browseInJPanel(model, new TreeTable.FileRowModel(), new TreeTable.FileDataProvider());
+        projectPanel.add(jPanel);
+        projectPanel.revalidate();
     }
 
     private class ModulesRepositoryPanel extends JPanel {

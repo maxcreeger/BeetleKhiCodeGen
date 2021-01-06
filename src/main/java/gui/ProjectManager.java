@@ -146,7 +146,6 @@ public class ProjectManager {
         return filename.toString();
     }
 
-
     public boolean exists(String projectName) {
         return Files.exists(projectHome(projectName));
     }
@@ -211,8 +210,7 @@ public class ProjectManager {
     /**
      * Loads user preferences from the given file.
      *
-     * @param filename
-     *        filename of the file storing the preferences
+     * @param filename filename of the file storing the preferences
      */
     public static void loadUserPreferences(String filename) {
         try {
@@ -226,17 +224,19 @@ public class ProjectManager {
     /**
      * Saves a given preference to file.
      *
-     * @param preferencesfilename
-     * @param prefs
+     * @param preferencesFilename the file where the preferences are stored
+     * @param preferences the preferences to be stored
      */
-    public static void saveUserPreferences(String preferencesfilename,
-                                           Preferences prefs)  {
-        try (FileOutputStream fos = new FileOutputStream(preferencesfilename)) {
-            prefs.exportSubtree(fos);
+    public static void saveUserPreferences(String preferencesFilename,
+                                           Preferences preferences)  {
+        try (FileOutputStream fos = new FileOutputStream(preferencesFilename)) {
+            preferences.exportSubtree(fos);
         } catch (IOException | BackingStoreException e){
             throw new RuntimeException(e);
         }
     }
 
-
+    public Path getProjectHome(String projectName) {
+        return KHI_PROJECTS.resolve(projectName);
+    }
 }
