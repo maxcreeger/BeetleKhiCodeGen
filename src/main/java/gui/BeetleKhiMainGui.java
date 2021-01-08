@@ -2,6 +2,7 @@ package gui;
 
 import exceptions.*;
 import generator.ProcessOverview;
+import gui.graph.FileGraph;
 import gui.tree.file.FileRenderDataProvider;
 import gui.tree.file.FileRowModel;
 import gui.tree.file.FileTreeModel;
@@ -83,9 +84,9 @@ public class BeetleKhiMainGui extends JFrame {
         console.setMinimumSize(new Dimension(60, 30));
         console.setPreferredSize(new Dimension(400, 200));
         fileBrowser = new JPanel();
-        fileBrowser.setBorder(BorderFactory.createLineBorder( Color.red));
+        fileBrowser.setBorder(BorderFactory.createLineBorder(Color.red));
         JScrollPane scrollableFileBrowser = new JScrollPane(fileBrowser);
-        scrollableFileBrowser.setBorder(BorderFactory.createLineBorder( Color.green));
+        scrollableFileBrowser.setBorder(BorderFactory.createLineBorder(Color.green));
         projectView = border(scrollableFileBrowser, "Project");
         FlowLayout projectViewLayout = new FlowLayout();
         projectViewLayout.setAlignment(FlowLayout.LEFT);
@@ -136,7 +137,7 @@ public class BeetleKhiMainGui extends JFrame {
                 if (mouseEvent.getClickCount() == 2 && fileOutline.getSelectedRow() != -1) {
                     File file = (File) fileOutline.getValueAt(row, 0);
                     System.out.println("Double clicked: " + file);
-                    centralPanel.openFile(file);
+                    centralPanel.open(file);
                 }
             }
         });
@@ -146,28 +147,58 @@ public class BeetleKhiMainGui extends JFrame {
         projectView.revalidate();
     }
 
-    public static class TabbedCentralPanel extends JTabbedPane {
+    public class TabbedCentralPanel extends JTabbedPane {
 
         private final Map<File, JComponent> panels = new HashMap<>();
 
-        public void openFile(File file) {
+        public void open(File file) {
             JComponent existing = panels.get(file);
-            if(existing == null) {
-                RSyntaxTextArea textArea = null;
-                try {
-                    textArea = new RSyntaxTextArea(Files.readString(file.toPath()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            if (existing == null) {
+                JComponent newPanel;
+                switch (getFileExtension(file)) {
+                    case ".c":
+                        newPanel = openSourceCode(file);
+                        break;
+                    case ".dot":
+                        newPanel = openGraph(file);
+                        break;
+                    default:
+                        JOptionPane.showMessageDialog(BeetleKhiMainGui.this, "Unsupported File Extension: " + file.getAbsolutePath(), "Unsupported File Extension", JOptionPane.ERROR_MESSAGE, Icons.FILE_VIEW_INFORMATION_ICON);
+                        throw new UnsupportedOperationException("Unknown file type " + getFileExtension(file));
                 }
-                textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_C);
-                textArea.setCodeFoldingEnabled(true);
-                RTextScrollPane panel = new RTextScrollPane(textArea);
-                panels.put(file, panel);
-                add(panel, file.getName());
+                panels.put(file, newPanel);
+                add(newPanel, file.getName());
+                setSelectedComponent(newPanel);
                 revalidate();
             } else {
                 setSelectedComponent(existing);
             }
+        }
+
+        private  String getFileExtension(File file) {
+            String name = file.getName();
+            int lastIndexOf = name.lastIndexOf(".");
+            if (lastIndexOf == -1) {
+                return ""; // empty extension
+            }
+            return name.substring(lastIndexOf);
+        }
+
+        private JComponent openGraph(File file) {
+            return new FileGraph(file);
+        }
+
+
+        private JComponent openSourceCode(File file) {
+            RSyntaxTextArea textArea = null;
+            try {
+                textArea = new RSyntaxTextArea(Files.readString(file.toPath()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_C);
+            textArea.setCodeFoldingEnabled(true);
+            return new RTextScrollPane(textArea);
         }
 
         public void closeTab(Path path) {

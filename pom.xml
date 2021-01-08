@@ -94,6 +94,17 @@
             <artifactId>rsyntaxtextarea</artifactId>
             <version>3.1.2</version>
         </dependency>
+        <!-- https://github.com/nidi3/graphviz-java#user-content-how-it-works -->
+        <dependency>
+            <groupId>guru.nidi</groupId>
+            <artifactId>graphviz-java</artifactId>
+            <version>0.18.0</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
 
 
     </dependencies>
