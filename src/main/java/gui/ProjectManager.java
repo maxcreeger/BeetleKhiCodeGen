@@ -1,5 +1,6 @@
 package gui;
 
+import gui.tree.preference.PreferenceTreeModel;
 import parsing.Parser;
 import test.beetlekhi.module.Khimodule;
 import test.beetlekhi.process.Khiprocess;
@@ -31,8 +32,8 @@ public class ProjectManager {
     private static final Preferences SYSTEM_PREFERENCES = Preferences.systemRoot().node("org").node("marmotte").node("BeetleKhi");
     private static final Preferences USER_PREFERENCES = Preferences.userRoot().node("org").node("marmotte").node("BeetleKhi");
 
-    public static final TreeTable.PreferenceTreeModel SYSTEM_PREFERENCE_MODEL = new TreeTable.PreferenceTreeModel(SYSTEM_PREFERENCES);
-    public static final TreeTable.PreferenceTreeModel USER_PREFERENCE_MODEL = new TreeTable.PreferenceTreeModel(USER_PREFERENCES);
+    public static final PreferenceTreeModel SYSTEM_PREFERENCE_MODEL = new PreferenceTreeModel(SYSTEM_PREFERENCES);
+    public static final PreferenceTreeModel USER_PREFERENCE_MODEL = new PreferenceTreeModel(USER_PREFERENCES);
 
 
     // Session data
