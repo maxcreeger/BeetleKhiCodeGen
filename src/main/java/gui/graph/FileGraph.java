@@ -1,5 +1,6 @@
 package gui.graph;
 
+import gui.views.TabbedCentralPanel;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Font;
 import guru.nidi.graphviz.attribute.*;
@@ -12,13 +13,18 @@ import guru.nidi.graphviz.parse.Parser;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static guru.nidi.graphviz.model.Factory.*;
 
-public class FileGraph extends JPanel {
+public class FileGraph extends JSplitPane {
+
     private final File file;
-    private BufferedImage bufferedImage;
+    private final JComponent textPanel;
+    private final ImagePanel graphPanel;
 
     public static void main(String[] argc) throws IOException {
         FileGraph fileGraphPanel = new FileGraph(new File("example/test.dot"));
@@ -31,12 +37,13 @@ public class FileGraph extends JPanel {
     }
 
     public FileGraph(File file) {
+        super();
         this.file = file;
-        refreshImage();
-    }
-
-    private static BufferedImage generateImage(MutableGraph g) {
-        return Graphviz.fromGraph(g).scale(1.0).render(Format.PNG).toImage();
+        textPanel = TabbedCentralPanel.openSourceCode(file);
+        graphPanel = new ImagePanel();
+        this.setLeftComponent(textPanel);
+        this.setRightComponent(graphPanel);
+        refresh();
     }
 
     private static Graph sampleApi() {
@@ -60,14 +67,29 @@ public class FileGraph extends JPanel {
         }
     }
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        if (bufferedImage != null)
-            g.drawImage(bufferedImage, 0, 0, this);
+    private static BufferedImage generateImage(MutableGraph g) {
+        return Graphviz.fromGraph(g).scale(1.0).render(Format.PNG).toImage();
     }
 
-    public void refreshImage() {
-        bufferedImage = generateImage(readGraph(file));
+    public void refresh() {
+        BufferedImage bufferedImage = generateImage(readGraph(file));
+        graphPanel.setBufferedImage(bufferedImage);
+    }
+
+    private static class ImagePanel extends JPanel{
+
+        BufferedImage bufferedImage;
+
+        public void setBufferedImage(BufferedImage img){
+            this.bufferedImage = img;
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            super.paint(g);
+            if (bufferedImage != null) {
+                g.drawImage(bufferedImage, 0, 0, this);
+            }
+        }
     }
 }

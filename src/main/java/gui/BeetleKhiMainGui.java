@@ -2,15 +2,15 @@ package gui;
 
 import exceptions.*;
 import generator.ProcessOverview;
-import gui.graph.FileGraph;
+import gui.actions.NewProjectAction;
+import gui.actions.OpenProjectAction;
 import gui.tree.file.FileRenderDataProvider;
 import gui.tree.file.FileRowModel;
 import gui.tree.file.FileTreeModel;
+import gui.views.ModulesRepositoryPanel;
+import gui.views.TabbedCentralPanel;
 import linker.LinkedNode;
 import linker.ProcessLinker;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rtextarea.RTextScrollPane;
 import org.netbeans.swing.outline.Outline;
 import test.beetlekhi.module.Khimodule;
 import test.beetlekhi.process.Khiprocess;
@@ -22,8 +22,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +31,7 @@ public class BeetleKhiMainGui extends JFrame {
 
     private final ProjectManager projectManager;
     private final JPanel fileBrowser;
-    private final TabbedCentralPanel centralPanel = new TabbedCentralPanel();
+    private final TabbedCentralPanel centralPanel = new TabbedCentralPanel(this);
     private final JComponent projectView;
 
     public BeetleKhiMainGui(Path khiHome) {
@@ -44,8 +42,8 @@ public class BeetleKhiMainGui extends JFrame {
 
         // JMenu ------------------------------------------
         // Project management
-        JMenuItem projectNew = new JMenuItem(new NewProjectAction(projectManager));
-        JMenuItem projectOpen = new JMenuItem(new OpenProjectAction(projectManager));
+        JMenuItem projectNew = new JMenuItem(new NewProjectAction(this, projectManager));
+        JMenuItem projectOpen = new JMenuItem(new OpenProjectAction(this, projectManager));
         JMenuItem projectSave = new JMenuItem(new NotImplementedYet("Save")); // TODO
         JMenuItem projectSaveAs = new JMenuItem(new NotImplementedYet("Save As...")); // TODO
         JMenu project = new JMenu("Project");
@@ -117,7 +115,7 @@ public class BeetleKhiMainGui extends JFrame {
         return palette;
     }
 
-    private static JComponent border(JComponent component, String title) {
+    public static JComponent border(JComponent component, String title) {
         Border blackLine = BorderFactory.createTitledBorder(title);
         JPanel borderedPanel = new JPanel();
         borderedPanel.setBorder(blackLine);
@@ -145,98 +143,6 @@ public class BeetleKhiMainGui extends JFrame {
         //fileOutline.getSelectionModel().addListSelectionListener(selectionListener);
         fileBrowser.add(fileOutline);
         projectView.revalidate();
-    }
-
-    public class TabbedCentralPanel extends JTabbedPane {
-
-        private final Map<File, JComponent> panels = new HashMap<>();
-
-        public void open(File file) {
-            JComponent existing = panels.get(file);
-            if (existing == null) {
-                JComponent newPanel;
-                switch (getFileExtension(file)) {
-                    case ".c":
-                        newPanel = openSourceCode(file);
-                        break;
-                    case ".dot":
-                        newPanel = openGraph(file);
-                        break;
-                    default:
-                        JOptionPane.showMessageDialog(BeetleKhiMainGui.this, "Unsupported File Extension: " + file.getAbsolutePath(), "Unsupported File Extension", JOptionPane.ERROR_MESSAGE, Icons.FILE_VIEW_INFORMATION_ICON);
-                        throw new UnsupportedOperationException("Unknown file type " + getFileExtension(file));
-                }
-                panels.put(file, newPanel);
-                add(newPanel, file.getName());
-                setSelectedComponent(newPanel);
-                revalidate();
-            } else {
-                setSelectedComponent(existing);
-            }
-        }
-
-        private  String getFileExtension(File file) {
-            String name = file.getName();
-            int lastIndexOf = name.lastIndexOf(".");
-            if (lastIndexOf == -1) {
-                return ""; // empty extension
-            }
-            return name.substring(lastIndexOf);
-        }
-
-        private JComponent openGraph(File file) {
-            return new FileGraph(file);
-        }
-
-
-        private JComponent openSourceCode(File file) {
-            RSyntaxTextArea textArea = null;
-            try {
-                textArea = new RSyntaxTextArea(Files.readString(file.toPath()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_C);
-            textArea.setCodeFoldingEnabled(true);
-            return new RTextScrollPane(textArea);
-        }
-
-        public void closeTab(Path path) {
-            JComponent panel = panels.remove(path);
-            if (panel != null) {
-                remove(panel);
-            }
-        }
-    }
-
-    private static class ModulesRepositoryPanel extends JPanel {
-
-        private final Map<Khimodule, JComponent> moduleRepresentation = new HashMap<>();
-
-        public ModulesRepositoryPanel(ProjectManager projectManager) {
-            this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-            refreshRepositories(projectManager);
-        }
-
-        private void refreshRepositories(ProjectManager projectManager) {
-            // Clean up
-            moduleRepresentation.values().forEach(this::remove);
-            moduleRepresentation.clear();
-            // Scan
-            List<Khimodule> modulesRepository = projectManager.getModulesRepository();
-            if (modulesRepository.isEmpty()) {
-                JLabel label = new JLabel("No Modules found in " + modulesRepository);
-                moduleRepresentation.put(null, label);
-                System.out.println(" + No modules found: " + modulesRepository);
-                add(label);
-            } else {
-                modulesRepository.forEach(module -> {
-                    JButton label = new JButton(module.getName());
-                    moduleRepresentation.put(module, label);
-                    add(label);
-                });
-            }
-        }
     }
 
     private class ProcessRepositoryPanel extends JPanel {
@@ -303,66 +209,6 @@ public class BeetleKhiMainGui extends JFrame {
                         }
                         borderedPanel.add(label);
                     });
-        }
-    }
-
-    private class NewProjectAction extends AbstractAction {
-        private final ProjectManager projectManager;
-
-        public NewProjectAction(ProjectManager projectManager) {
-            super("New...", Icons.FILE_VIEW_NEW_FOLDER_ICON);
-            this.projectManager = projectManager;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Object selection = JOptionPane.showInputDialog(
-                    BeetleKhiMainGui.this,
-                    "Project Name:",
-                    "New Project",
-                    JOptionPane.PLAIN_MESSAGE,
-                    Icons.FILE_VIEW_NEW_FOLDER_ICON,
-                    null,
-                    "MyProject");
-            String rawProjectName = (String) selection;
-            if (rawProjectName == null) {
-                return; // Cancelled by user
-            }
-            String projectName = ProjectManager.sanitizeFileOrFolderName(rawProjectName);
-            String errorMessage = null;
-            if (!rawProjectName.equals(projectName)) {
-                errorMessage = "Project \"" + projectName + "\" contains invalid character(s)";
-            } else if (projectName.isEmpty()) {
-                errorMessage = "Project Name was empty";
-            } else if (projectManager.exists(projectName)) {
-                errorMessage = "Project \"" + projectName + "\" already exists";
-            }
-            if (errorMessage == null) {
-                projectManager.newProject(projectName);
-                open(projectName);
-            } else {
-                JOptionPane.showMessageDialog(BeetleKhiMainGui.this, errorMessage, "Invalid Project Name", JOptionPane.ERROR_MESSAGE, Icons.FILE_VIEW_ERROR_ICON);
-                actionPerformed(e);
-            }
-        }
-    }
-
-    private class OpenProjectAction extends AbstractAction {
-        private final ProjectManager projectManager;
-
-        public OpenProjectAction(ProjectManager projectManager) {
-            super("Open...", Icons.FILE_VIEW_DIRECTORY_ICON);
-            this.projectManager = projectManager;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JFileChooser chooser = new JFileChooser(projectManager.getProjectsHome().toFile());
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int returnVal = chooser.showOpenDialog(BeetleKhiMainGui.this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                open(chooser.getSelectedFile().getName());
-            }
         }
     }
 
