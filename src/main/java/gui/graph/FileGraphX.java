@@ -11,6 +11,7 @@ import javax.xml.bind.JAXBException;
 import java.awt.*;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FileGraphX extends JPanel {
@@ -45,7 +46,7 @@ public class FileGraphX extends JPanel {
         Object parent = graph.getDefaultParent();
 
         // Build
-        Grafcet grafcetDAO = null;
+        Grafcet grafcetDAO;
         try {
             grafcetDAO = GrafcetUtils.readGrafcetFromXML(file);
         } catch (JAXBException e) {
@@ -62,6 +63,66 @@ public class FileGraphX extends JPanel {
             if (actions != null) {
                 for (String action : actions.getAction()) {
                     // TODO Do something?
+                }
+            }
+        }
+
+
+        // Build transitions
+        Map<Integer, Object> graphTransitions = new HashMap<>();
+        Map<Integer, Transition> daoTransitions = new HashMap<>();
+        for (Transition transitionDAO : grafcetDAO.getTransitions().getTransition()) {
+            Object tran = graph.insertVertex(parent, null, transitionDAO, transitionDAO.getX() * 100, transitionDAO.getY() * 100, 80, 12, "fillColor=black");
+            graphTransitions.put(transitionDAO.getNum(), tran);
+            daoTransitions.put(transitionDAO.getNum(), transitionDAO);
+
+            // Setup transition upstream step links
+            if (transitionDAO.getRequiredSteps() != null) {
+                java.util.List<Required> requiredStepsDAO = transitionDAO.getRequiredSteps().getRequired();
+                if (requiredStepsDAO.size() == 1) {
+                    Object step = graphSteps.get(requiredStepsDAO.get(0).getStep());
+                    graph.insertEdge(parent, null, null, step, tran);
+                } else if (requiredStepsDAO.size() > 1) {
+                    // Compute concentrator span
+                    int xMin = transitionDAO.getX();
+                    int xMax = transitionDAO.getX();
+                    for (Required required : requiredStepsDAO) {
+                        xMin = Math.min(xMin, daoSteps.get(required.getStep()).getX());
+                        xMax = Math.max(xMax, daoSteps.get(required.getStep()).getX());
+                    }
+                    // Create concentrator
+                    Object concentrator = graph.insertVertex(parent, null, null, xMin * 100, transitionDAO.getY() * 100 - 30, (xMax - xMin) * 100, 1);
+                    graph.insertEdge(parent, null, "", concentrator, tran);
+                    // Link to each Tran
+                    for (Required executeDAO : requiredStepsDAO) {
+                        Object graphStep = graphSteps.get(executeDAO.getStep());
+                        graph.insertEdge(parent, null, executeDAO, graphStep, concentrator);
+                    }
+                }
+            }
+
+            // Setup transition downstream step links
+            if (transitionDAO.getExecutedSteps() != null) {
+                List<Executed> executedStepsDAO = transitionDAO.getExecutedSteps().getExecuted();
+                if (executedStepsDAO.size() == 1) {
+                    Object step = graphSteps.get(executedStepsDAO.get(0).getStep());
+                    graph.insertEdge(parent, null, null, tran, step);
+                } else if (executedStepsDAO.size() > 1) {
+                    // Compute concentrator span
+                    int xMin = transitionDAO.getX();
+                    int xMax = transitionDAO.getX();
+                    for (Executed executeDAO : executedStepsDAO) {
+                        xMin = Math.min(xMin, daoSteps.get(executeDAO.getStep()).getX());
+                        xMax = Math.max(xMax, daoSteps.get(executeDAO.getStep()).getX());
+                    }
+                    // Create concentrator
+                    Object concentrator = graph.insertVertex(parent, null, null, xMin * 100 + 10, transitionDAO.getY() * 100 + 50, (xMax - xMin) * 100 + 60, 1);
+                    graph.insertEdge(parent, null, null, tran, concentrator);
+                    // Link to each step
+                    for (Executed executeDAO : executedStepsDAO) {
+                        Object step = graphSteps.get(executeDAO.getStep());
+                        graph.insertEdge(parent, null, executeDAO, concentrator, step);
+                    }
                 }
             }
         }

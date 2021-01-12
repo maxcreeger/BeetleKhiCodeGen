@@ -16,11 +16,8 @@ import test.beetlekhi.module.Khimodule;
 import test.beetlekhi.process.Khiprocess;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -38,7 +35,7 @@ public class BeetleKhiMainGui extends JFrame {
         super("Beetle Khi");
         // Prepare Environment
         projectManager = new ProjectManager(khiHome);
-        this.setPreferredSize(new Dimension(800, 600));
+        this.setPreferredSize(new Dimension(1280, 768));
 
         // JMenu ------------------------------------------
         // Project management
@@ -78,17 +75,14 @@ public class BeetleKhiMainGui extends JFrame {
         // Main JPanel ------------------------------------------
         centralPanel.setMinimumSize(new Dimension(60, 30));
         centralPanel.setPreferredSize(new Dimension(400, 400));
-        JComponent console = border(new JPanel(), "Console");
+        JComponent console = new JPanel();
+        console.setBorder(BorderFactory.createTitledBorder("Console"));
         console.setMinimumSize(new Dimension(60, 30));
         console.setPreferredSize(new Dimension(400, 200));
         fileBrowser = new JPanel();
-        // fileBrowser.setBorder(BorderFactory.createLineBorder(Color.red));
-        JScrollPane scrollableFileBrowser = new JScrollPane(fileBrowser);
-        // scrollableFileBrowser.setBorder(BorderFactory.createLineBorder(Color.green));
-        projectView = border(scrollableFileBrowser, "Project");
-        FlowLayout projectViewLayout = new FlowLayout();
-        projectViewLayout.setAlignment(FlowLayout.LEFT);
-        projectView.setLayout(projectViewLayout);
+        fileBrowser.setLayout(new BorderLayout());
+        projectView = new JScrollPane(fileBrowser);
+        projectView.setBorder(BorderFactory.createTitledBorder("Project"));
         JComponent palette = makePalette();
         JSplitPane leftPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, projectView, centralPanel);
         leftPanel.setOneTouchExpandable(true);
@@ -112,21 +106,16 @@ public class BeetleKhiMainGui extends JFrame {
     }
 
     private JComponent makePalette() {
-        JComponent modulesView = border(new ModulesRepositoryPanel(projectManager), "Modules");
-        JComponent processesView = border(new ProcessRepositoryPanel(projectManager), "Processes");
+        JComponent modulesView = new ModulesRepositoryPanel(projectManager);
+        modulesView.setBorder(BorderFactory.createTitledBorder("Modules"));
+        JComponent processesView = new ProcessRepositoryPanel(projectManager);
+        processesView.setBorder(BorderFactory.createTitledBorder("Processes"));
         JComponent splitPalette = new JSplitPane(JSplitPane.VERTICAL_SPLIT, modulesView, processesView);
-        JComponent palette = new JScrollPane(border(splitPalette, "Palette"));
+        splitPalette.setBorder(BorderFactory.createTitledBorder("Palette"));
+        JComponent palette = new JScrollPane(splitPalette);
         palette.setMinimumSize(new Dimension(60, 30));
         palette.setPreferredSize(new Dimension(120, 400));
         return palette;
-    }
-
-    public static JComponent border(JComponent component, String title) {
-        Border blackLine = BorderFactory.createTitledBorder(title);
-        JPanel borderedPanel = new JPanel();
-        borderedPanel.setBorder(blackLine);
-        borderedPanel.add(component);
-        return borderedPanel;
     }
 
     public void open(String projectName) {
@@ -140,7 +129,7 @@ public class BeetleKhiMainGui extends JFrame {
                 int row = fileOutline.rowAtPoint(point);
                 if (mouseEvent.getClickCount() == 2 && fileOutline.getSelectedRow() != -1) {
                     File file = (File) fileOutline.getValueAt(row, 0);
-                    if(file.isDirectory()) {
+                    if (file.isDirectory()) {
                         return; // Nothing to do, just navigating
                     }
                     System.out.println("Double clicked: " + file);
@@ -148,9 +137,7 @@ public class BeetleKhiMainGui extends JFrame {
                 }
             }
         });
-
-        //fileOutline.getSelectionModel().addListSelectionListener(selectionListener);
-        fileBrowser.add(fileOutline);
+        fileBrowser.add(fileOutline, BorderLayout.CENTER);
         projectView.revalidate();
     }
 
@@ -193,8 +180,9 @@ public class BeetleKhiMainGui extends JFrame {
             this.process = process;
             // Prepare border
             this.setLayout(new FlowLayout());
-            JComponent borderedPanel = border(new JPanel(), process.getName());
-            this.add(borderedPanel);
+            JPanel panel = new JPanel();
+            panel.setBorder(BorderFactory.createTitledBorder(process.getName()));
+            this.add(panel);
 
             // Prepare contents
             ProcessLinker linker;
@@ -216,7 +204,7 @@ public class BeetleKhiMainGui extends JFrame {
                         if (modulesRepository.stream().map(Khimodule::getName).anyMatch(moduleName::equals)) {
                             label.setBackground(UIManager.getColor("controlShadow"));
                         }
-                        borderedPanel.add(label);
+                        panel.add(label);
                     });
         }
     }
