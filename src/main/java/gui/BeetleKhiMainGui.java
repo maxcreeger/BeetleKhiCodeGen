@@ -82,9 +82,9 @@ public class BeetleKhiMainGui extends JFrame {
         console.setMinimumSize(new Dimension(60, 30));
         console.setPreferredSize(new Dimension(400, 200));
         fileBrowser = new JPanel();
-        fileBrowser.setBorder(BorderFactory.createLineBorder(Color.red));
+        // fileBrowser.setBorder(BorderFactory.createLineBorder(Color.red));
         JScrollPane scrollableFileBrowser = new JScrollPane(fileBrowser);
-        scrollableFileBrowser.setBorder(BorderFactory.createLineBorder(Color.green));
+        // scrollableFileBrowser.setBorder(BorderFactory.createLineBorder(Color.green));
         projectView = border(scrollableFileBrowser, "Project");
         FlowLayout projectViewLayout = new FlowLayout();
         projectViewLayout.setAlignment(FlowLayout.LEFT);
@@ -92,10 +92,16 @@ public class BeetleKhiMainGui extends JFrame {
         JComponent palette = makePalette();
         JSplitPane leftPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, projectView, centralPanel);
         leftPanel.setOneTouchExpandable(true);
+        leftPanel.setContinuousLayout(true);
+        leftPanel.setResizeWeight(1.); // All size changes given to the central tabbed panel (project view is slave)
         JSplitPane top = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, palette);
         top.setOneTouchExpandable(true);
+        top.setContinuousLayout(true);
+        leftPanel.setResizeWeight(0.); // All size changes given to the left panels (palette is slave)
         JSplitPane verticalSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, top, console);
         verticalSplit.setOneTouchExpandable(true);
+        verticalSplit.setContinuousLayout(true);
+        verticalSplit.setResizeWeight(1.);
         this.add(verticalSplit);
 
         // Make JFrame ------------------------------------------
@@ -134,6 +140,9 @@ public class BeetleKhiMainGui extends JFrame {
                 int row = fileOutline.rowAtPoint(point);
                 if (mouseEvent.getClickCount() == 2 && fileOutline.getSelectedRow() != -1) {
                     File file = (File) fileOutline.getValueAt(row, 0);
+                    if(file.isDirectory()) {
+                        return; // Nothing to do, just navigating
+                    }
                     System.out.println("Double clicked: " + file);
                     centralPanel.open(file);
                 }

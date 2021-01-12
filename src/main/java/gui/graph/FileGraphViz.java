@@ -11,7 +11,6 @@ import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.parse.Parser;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,14 +19,14 @@ import java.io.InputStream;
 
 import static guru.nidi.graphviz.model.Factory.*;
 
-public class FileGraph extends JSplitPane {
+public class FileGraphViz extends JSplitPane {
 
     private final File file;
     private final JComponent textPanel;
     private final ImagePanel graphPanel;
 
     public static void main(String[] argc) throws IOException {
-        FileGraph fileGraphPanel = new FileGraph(new File("example/test.dot"));
+        FileGraphViz fileGraphPanel = new FileGraphViz(new File("example/test.dot"));
         JFrame jframe = new JFrame("test Graph");
         jframe.getContentPane().setLayout(new BoxLayout(jframe.getContentPane(), BoxLayout.PAGE_AXIS));
         jframe.add(fileGraphPanel);
@@ -36,7 +35,7 @@ public class FileGraph extends JSplitPane {
         jframe.pack();
     }
 
-    public FileGraph(File file) {
+    public FileGraphViz(File file) {
         super();
         this.file = file;
         textPanel = TabbedCentralPanel.openSourceCode(file);
@@ -76,20 +75,4 @@ public class FileGraph extends JSplitPane {
         graphPanel.setBufferedImage(bufferedImage);
     }
 
-    private static class ImagePanel extends JPanel{
-
-        BufferedImage bufferedImage;
-
-        public void setBufferedImage(BufferedImage img){
-            this.bufferedImage = img;
-        }
-
-        @Override
-        public void paint(Graphics g) {
-            super.paint(g);
-            if (bufferedImage != null) {
-                g.drawImage(bufferedImage, 0, 0, this);
-            }
-        }
-    }
 }

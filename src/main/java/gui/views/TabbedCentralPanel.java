@@ -2,7 +2,8 @@ package gui.views;
 
 import gui.BeetleKhiMainGui;
 import gui.Icons;
-import gui.graph.FileGraph;
+import gui.graph.FileGraphViz;
+import gui.graph.FileGraphX;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -33,7 +34,10 @@ public class TabbedCentralPanel extends JTabbedPane {
                     newPanel = openSourceCode(file);
                     break;
                 case ".dot":
-                    newPanel = openGraph(file);
+                    newPanel = new FileGraphViz(file);
+                    break;
+                case ".grafcet":
+                    newPanel = new FileGraphX(file);
                     break;
                 default:
                     JOptionPane.showMessageDialog(beetleKhiMainGui, "Unsupported File Extension: " + file.getAbsolutePath(), "Unsupported File Extension", JOptionPane.ERROR_MESSAGE, Icons.FILE_VIEW_INFORMATION_ICON);
@@ -57,7 +61,7 @@ public class TabbedCentralPanel extends JTabbedPane {
             closeButton.setContentAreaFilled(false);
             closeButton.setForeground(Color.RED);
             closeButton.setBorderPainted(false);
-            closeButton.setMargin(new Insets(1,1,1,1));
+            closeButton.setMargin(new Insets(1, 1, 1, 1));
             closeButton.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     closeButton.setContentAreaFilled(true);
@@ -86,10 +90,6 @@ public class TabbedCentralPanel extends JTabbedPane {
             return ""; // empty extension
         }
         return name.substring(lastIndexOf);
-    }
-
-    private JComponent openGraph(File file) {
-        return new FileGraph(file);
     }
 
 

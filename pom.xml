@@ -105,6 +105,28 @@
             <artifactId>logback-classic</artifactId>
             <version>1.2.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.beetlekhi</groupId>
+            <artifactId>JGraphcetX</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.beetlekhi</groupId>
+            <artifactId>JGrafcetAnimator</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.beetlekhi</groupId>
+            <artifactId>JGrafcet</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.jgraph/jgraphx -->
+        <dependency>
+            <groupId>com.github.vlsi.mxgraph</groupId>
+            <artifactId>jgraphx</artifactId>
+            <version>4.1.0</version>
+        </dependency>
 
 
     </dependencies>
