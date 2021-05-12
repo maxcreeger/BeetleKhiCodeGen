@@ -1,6 +1,6 @@
-/target/
-/bin/
-/generated/
+**/target/
+**/bin/
+**/generated/
 /resources/result/
 /.settings/
 .project
